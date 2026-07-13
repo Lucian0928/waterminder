@@ -22,8 +22,13 @@
     rgba(255, 255, 255, 0.08),
     transparent 60%
   );
-  --tab-glass-bg: rgba(15, 21, 37, 0.72);
-  --tab-glass-border: rgba(255, 255, 255, 0.09);
+  --tab-glass-bg: rgba(120, 120, 128, 0.28);
+  --tab-glass-border: rgba(255, 255, 255, 0.22);
+  --tab-glass-shadow: 0 4px 24px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18), inset 0 -1px 0 rgba(0, 0, 0, 0.12);
+  --tab-glass-shadow-hover: 0 6px 30px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  --tab-icon-inactive: rgba(255, 255, 255, 0.82);
   --ring-track: rgba(255, 255, 255, 0.06);
   --ring-inner: rgba(255, 255, 255, 0.02);
 }
@@ -47,8 +52,13 @@
     rgba(255, 255, 255, 0.9),
     transparent 60%
   );
-  --tab-glass-bg: rgba(255, 255, 255, 0.72);
-  --tab-glass-border: rgba(14, 26, 42, 0.08);
+  --tab-glass-bg: rgba(200, 206, 218, 0.32);
+  --tab-glass-border: rgba(14, 26, 42, 0.14);
+  --tab-glass-shadow: 0 6px 24px rgba(15, 45, 60, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(15, 45, 60, 0.05);
+  --tab-glass-shadow-hover: 0 8px 28px rgba(15, 45, 60, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  --tab-icon-inactive: rgba(14, 26, 42, 0.55);
   --ring-track: rgba(14, 26, 42, 0.07);
   --ring-inner: rgba(14, 26, 42, 0.02);
 }
@@ -133,22 +143,37 @@ body::before {
   pointer-events: none;
 }
 
-/* 底部 Tab Bar 的玻璃膠囊 */
+/* 底部 Tab Bar 的玻璃膠囊（真實 backdrop-filter 玻璃質感） */
 .glass-pill {
   background: var(--tab-glass-bg);
-  -webkit-backdrop-filter: blur(20px) saturate(1.4);
-  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  backdrop-filter: blur(28px) saturate(180%);
   border: 1px solid var(--tab-glass-border);
-  box-shadow:
-    0 10px 34px rgba(0, 0, 0, 0.42),
-    0 0 22px rgba(0, 212, 184, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  box-shadow: var(--tab-glass-shadow);
+  transition: box-shadow 0.2s;
 }
 
-[data-theme="light"] .glass-pill {
+.glass-pill:hover {
+  box-shadow: var(--tab-glass-shadow-hover);
+}
+
+/* 滑動指示泡泡：霧白玻璃，疊在目前選中的分頁上方，可拖曳 */
+.tab-bubble {
+  background: rgba(255, 255, 255, 0.38);
   box-shadow:
-    0 10px 30px rgba(15, 45, 60, 0.14),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    0 2px 8px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  border-radius: 999px;
+  will-change: transform;
+}
+
+.tab-icon {
+  color: var(--tab-icon-inactive);
+  transition: opacity 0.2s;
+}
+
+.tab-icon:hover {
+  opacity: 0.7;
 }
 
 /* 進度環：水波流動與達標光暈 */

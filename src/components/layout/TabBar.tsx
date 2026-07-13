@@ -1,96 +1,152 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { motion } from "framer-motion";
+import { usePathname, useRouter } from "next/navigation";
+import { useRef, useState } from "react";
+
+const ACTIVE_COLOR = "#1C6EF7";
+const OPT_W = 56;
+const PILL_PAD = 3;
+
+function DrippingIcon() {
+  return (
+    <svg width="22" height="25" viewBox="0 0 22 25" fill="none" aria-hidden>
+      <path
+        d="M11 2C11 2 3 10.8 3 16C3 20.4 6.58 24 11 24C15.42 24 19 20.4 19 16C19 10.8 11 2 11 2Z"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinejoin="round"
+      />
+      <path d="M11 24V26" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+      <path
+        d="M11 26C11 26 9 26 8.5 26.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function StatisticsIcon() {
+  return (
+    <svg width="24" height="22" viewBox="0 0 24 22" fill="none" aria-hidden>
+      <rect x="1.5" y="12" width="4.5" height="9" rx="1.2" stroke="currentColor" strokeWidth="1.6" />
+      <rect x="9.75" y="7" width="4.5" height="14" rx="1.2" stroke="currentColor" strokeWidth="1.6" />
+      <rect x="18" y="2" width="4.5" height="19" rx="1.2" stroke="currentColor" strokeWidth="1.6" />
+    </svg>
+  );
+}
+
+function SettingsIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M12 2.5L13.6 6.2C14.1 6.32 14.57 6.52 15 6.78L18.8 5.58L21.2 9.7L18.1 12.2C18.2 12.8 18.2 13.4 18.1 14L21.2 16.5L18.8 20.6L15 19.4C14.57 19.66 14.1 19.86 13.6 19.98L12 23.5L10.4 19.98C9.9 19.86 9.43 19.66 9 19.4L5.2 20.6L2.8 16.5L5.9 14C5.8 13.4 5.8 12.8 5.9 12.2L2.8 9.7L5.2 5.58L9 6.78C9.43 6.52 9.9 6.32 10.4 6.2L12 2.5Z"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinejoin="round"
+      />
+      <circle cx="12" cy="13" r="3" stroke="currentColor" strokeWidth="1.7" />
+    </svg>
+  );
+}
 
 const TABS = [
-  {
-    href: "/",
-    label: "今日",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden>
-        <path
-          d="M12 2.7c3.4 4.1 6.5 7.8 6.5 11.4a6.5 6.5 0 1 1-13 0C5.5 10.5 8.6 6.8 12 2.7Z"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M9.2 14.4a2.9 2.9 0 0 0 2.4 2.9"
-          stroke="currentColor"
-          strokeWidth="1.6"
-          strokeLinecap="round"
-        />
-      </svg>
-    ),
-  },
-  {
-    href: "/history",
-    label: "歷史",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden>
-        <path
-          d="M4 20V10.5M10 20V4.5M16 20v-8M21 20H3"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-        />
-      </svg>
-    ),
-  },
-  {
-    href: "/settings",
-    label: "設定",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden>
-        <circle cx="12" cy="12" r="3.2" stroke="currentColor" strokeWidth="1.8" />
-        <path
-          d="M12 3.2v2.2M12 18.6v2.2M20.8 12h-2.2M5.4 12H3.2M18.2 5.8l-1.5 1.5M7.3 16.7l-1.5 1.5M18.2 18.2l-1.5-1.5M7.3 7.3 5.8 5.8"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-        />
-      </svg>
-    ),
-  },
+  { href: "/", label: "今日", Icon: DrippingIcon },
+  { href: "/history", label: "歷史", Icon: StatisticsIcon },
+  { href: "/settings", label: "設定", Icon: SettingsIcon },
 ];
+
+const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 
 export function TabBar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const rawIndex = TABS.findIndex((t) => t.href === pathname);
+  const activeIndex = rawIndex === -1 ? 0 : rawIndex;
+
+  const [liveOffset, setLiveOffset] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const startX = useRef(0);
+  const startIndex = useRef(0);
+
+  const onBubblePointerDown = (e: React.PointerEvent) => {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    startX.current = e.clientX;
+    startIndex.current = activeIndex;
+    setDragging(true);
+    setLiveOffset(0);
+  };
+
+  const onBubblePointerMove = (e: React.PointerEvent) => {
+    if (!dragging) return;
+    const delta = e.clientX - startX.current;
+    const maxRight = (TABS.length - 1 - startIndex.current) * OPT_W;
+    const maxLeft = -startIndex.current * OPT_W;
+    setLiveOffset(clamp(delta, maxLeft, maxRight));
+  };
+
+  const onBubblePointerUp = (e: React.PointerEvent) => {
+    if (!dragging) return;
+    const delta = e.clientX - startX.current;
+    const steps = Math.round(delta / OPT_W);
+    const newIndex = clamp(startIndex.current + steps, 0, TABS.length - 1);
+    setDragging(false);
+    setLiveOffset(0);
+    const target = TABS[newIndex].href;
+    if (target !== pathname) router.push(target);
+  };
+
+  const displayIndex = dragging
+    ? clamp(startIndex.current + Math.round(liveOffset / OPT_W), 0, TABS.length - 1)
+    : activeIndex;
+
+  const bubbleTranslate = dragging ? activeIndex * OPT_W + liveOffset : activeIndex * OPT_W;
 
   return (
     <nav
       className="fixed inset-x-0 bottom-0 z-50 flex justify-center px-6 pb-[max(1rem,env(safe-area-inset-bottom))]"
       aria-label="主導覽"
     >
-      <div className="glass-pill flex items-center gap-1 rounded-full p-1.5">
-        {TABS.map((tab) => {
-          const active = pathname === tab.href;
+      <div
+        className="glass-pill relative flex items-center rounded-full"
+        style={{ padding: PILL_PAD, width: OPT_W * TABS.length + PILL_PAD * 2 }}
+      >
+        <div
+          className="tab-bubble absolute"
+          onPointerDown={onBubblePointerDown}
+          onPointerMove={onBubblePointerMove}
+          onPointerUp={onBubblePointerUp}
+          onPointerCancel={onBubblePointerUp}
+          style={{
+            top: PILL_PAD,
+            left: PILL_PAD,
+            width: OPT_W,
+            height: `calc(100% - ${PILL_PAD * 2}px)`,
+            zIndex: 2,
+            cursor: dragging ? "grabbing" : "grab",
+            transform: `translateX(${bubbleTranslate}px)`,
+            transition: dragging ? "none" : "transform 0.42s cubic-bezier(0.34,1.56,0.64,1)",
+          }}
+        />
+
+        {TABS.map((tab, i) => {
+          const active = displayIndex === i;
           return (
             <Link
               key={tab.href}
               href={tab.href}
-              aria-current={active ? "page" : undefined}
-              className={`relative flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition-colors duration-200 ${
-                active ? "text-bg" : "text-ink-2 hover:text-ink"
-              }`}
+              aria-label={tab.label}
+              aria-current={pathname === tab.href ? "page" : undefined}
+              className="tab-icon relative flex shrink-0 items-center justify-center rounded-full"
+              style={{
+                width: OPT_W,
+                height: `calc(100% - ${PILL_PAD * 2}px)`,
+                color: active ? ACTIVE_COLOR : undefined,
+              }}
             >
-              {active && (
-                <motion.span
-                  layoutId="tab-active-pill"
-                  className="absolute inset-0 rounded-full bg-gradient-to-r from-accent to-accent-deep shadow-[0_0_18px_rgba(0,212,184,0.45)]"
-                  transition={{ type: "spring", stiffness: 420, damping: 34 }}
-                />
-              )}
-              <span className="relative z-10">{tab.icon}</span>
-              <span
-                className={`relative z-10 overflow-hidden whitespace-nowrap transition-all duration-200 ${
-                  active ? "max-w-[4rem] opacity-100" : "max-w-0 opacity-0"
-                }`}
-              >
-                {tab.label}
-              </span>
+              <tab.Icon />
             </Link>
           );
         })}
