@@ -1,0 +1,223 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* 深色（預設）：深藍黑 + 青綠光 */
+  --c-bg: 7 11 20; /* #070b14 */
+  --c-surface: 15 21 37; /* #0f1525 */
+  --c-surface-2: 20 28 50; /* #141c32 */
+  --c-ink: 232 238 247; /* #e8eef7 */
+  --c-ink-2: 148 161 184; /* #94a1b8 */
+  --c-ink-3: 94 106 130; /* #5e6a82 */
+  --c-accent: 0 212 184; /* #00d4b8 */
+  --c-accent-deep: 8 145 178; /* #0891b2 */
+  --c-cool: 124 140 255; /* #7c8cff */
+  --c-line: 34 45 72; /* #222d48 */
+
+  --card-glow: 0 0 20px rgba(0, 212, 184, 0.12), 0 0 44px rgba(0, 212, 184, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --card-sheen: radial-gradient(
+    circle at top left,
+    rgba(255, 255, 255, 0.08),
+    transparent 60%
+  );
+  --tab-glass-bg: rgba(15, 21, 37, 0.72);
+  --tab-glass-border: rgba(255, 255, 255, 0.09);
+  --ring-track: rgba(255, 255, 255, 0.06);
+  --ring-inner: rgba(255, 255, 255, 0.02);
+}
+
+[data-theme="light"] {
+  --c-bg: 240 246 250; /* #f0f6fa */
+  --c-surface: 255 255 255;
+  --c-surface-2: 240 246 252;
+  --c-ink: 14 26 42; /* #0e1a2a */
+  --c-ink-2: 74 90 114;
+  --c-ink-3: 128 142 166;
+  --c-accent: 0 168 148; /* 淺色底下加深一階保持對比 */
+  --c-accent-deep: 8 122 150;
+  --c-cool: 92 108 232;
+  --c-line: 216 227 238;
+
+  --card-glow: 0 6px 24px rgba(15, 45, 60, 0.08), 0 1px 2px rgba(15, 45, 60, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  --card-sheen: radial-gradient(
+    circle at top left,
+    rgba(255, 255, 255, 0.9),
+    transparent 60%
+  );
+  --tab-glass-bg: rgba(255, 255, 255, 0.72);
+  --tab-glass-border: rgba(14, 26, 42, 0.08);
+  --ring-track: rgba(14, 26, 42, 0.07);
+  --ring-inner: rgba(14, 26, 42, 0.02);
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  min-height: 100%;
+  background-color: rgb(var(--c-bg));
+  color: rgb(var(--c-ink));
+  font-family: var(--font-body), "PingFang TC", "Noto Sans TC", system-ui,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+
+/* 深色底的環境光：畫面上緣一抹青綠氛圍 */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(
+      60% 38% at 50% -6%,
+      rgba(0, 212, 184, 0.14),
+      transparent 70%
+    ),
+    radial-gradient(
+      42% 30% at 88% 12%,
+      rgba(124, 140, 255, 0.1),
+      transparent 70%
+    );
+}
+
+[data-theme="light"] body::before {
+  background:
+    radial-gradient(
+      60% 38% at 50% -6%,
+      rgba(0, 168, 148, 0.1),
+      transparent 70%
+    ),
+    radial-gradient(
+      42% 30% at 88% 12%,
+      rgba(92, 108, 232, 0.07),
+      transparent 70%
+    );
+}
+
+.font-num {
+  font-family: var(--font-display), "PingFang TC", system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+  letter-spacing: -0.01em;
+}
+
+/* 玻璃擬態卡片：不透明深色底 + 多層光暈 + 左上光源 */
+.glow-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background-color: rgb(var(--c-surface));
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 1.5rem;
+  box-shadow: var(--card-glow);
+}
+
+[data-theme="light"] .glow-card {
+  border-color: rgba(14, 26, 42, 0.06);
+}
+
+.glow-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--card-sheen);
+  pointer-events: none;
+}
+
+/* 底部 Tab Bar 的玻璃膠囊 */
+.glass-pill {
+  background: var(--tab-glass-bg);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  backdrop-filter: blur(20px) saturate(1.4);
+  border: 1px solid var(--tab-glass-border);
+  box-shadow:
+    0 10px 34px rgba(0, 0, 0, 0.42),
+    0 0 22px rgba(0, 212, 184, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+[data-theme="light"] .glass-pill {
+  box-shadow:
+    0 10px 30px rgba(15, 45, 60, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+/* 進度環：水波流動與達標光暈 */
+@keyframes wave-drift {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-340px);
+  }
+}
+
+.wave-layer {
+  animation: wave-drift 7s linear infinite;
+}
+
+.wave-layer--back {
+  animation-duration: 11s;
+  animation-direction: reverse;
+}
+
+@keyframes ring-glow-pulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 8px rgba(0, 212, 184, 0.55))
+      drop-shadow(0 0 22px rgba(0, 212, 184, 0.3));
+  }
+  50% {
+    filter: drop-shadow(0 0 14px rgba(0, 212, 184, 0.85))
+      drop-shadow(0 0 38px rgba(0, 212, 184, 0.45));
+  }
+}
+
+.ring-complete {
+  animation: ring-glow-pulse 2.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wave-layer,
+  .wave-layer--back {
+    animation: none;
+  }
+  .ring-complete {
+    animation: none;
+    filter: drop-shadow(0 0 10px rgba(0, 212, 184, 0.6));
+  }
+}
+
+/* 隱藏水平捲動列（飲品選擇列） */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* 表單控制項的基本外觀 */
+input[type="time"],
+input[type="number"],
+input[type="text"] {
+  color-scheme: dark;
+}
+[data-theme="light"] input[type="time"],
+[data-theme="light"] input[type="number"],
+[data-theme="light"] input[type="text"] {
+  color-scheme: light;
+}
+
+:focus-visible {
+  outline: 2px solid rgb(var(--c-accent));
+  outline-offset: 2px;
+}
