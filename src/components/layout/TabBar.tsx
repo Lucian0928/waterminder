@@ -2,11 +2,10 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const ACTIVE_COLOR = "#1C6EF7";
-const OPT_W = 56;
-const PILL_PAD = 3;
+const PILL_PAD = 4;
 
 function DrippingIcon() {
   return (
@@ -68,8 +67,21 @@ export function TabBar() {
 
   const [liveOffset, setLiveOffset] = useState(0);
   const [dragging, setDragging] = useState(false);
+  const [slotW, setSlotW] = useState(0);
+  const pillRef = useRef<HTMLDivElement>(null);
   const startX = useRef(0);
   const startIndex = useRef(0);
+
+  /* 量測每個分頁欄位的實際寬度（等分整條 pill），讓 bubble 隨寬度自適應 */
+  useEffect(() => {
+    const el = pillRef.current;
+    if (!el) return;
+    const measure = () => setSlotW((el.clientWidth - PILL_PAD * 2) / TABS.length);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   const onBubblePointerDown = (e: React.PointerEvent) => {
     e.currentTarget.setPointerCapture(e.pointerId);
@@ -80,17 +92,17 @@ export function TabBar() {
   };
 
   const onBubblePointerMove = (e: React.PointerEvent) => {
-    if (!dragging) return;
+    if (!dragging || slotW === 0) return;
     const delta = e.clientX - startX.current;
-    const maxRight = (TABS.length - 1 - startIndex.current) * OPT_W;
-    const maxLeft = -startIndex.current * OPT_W;
+    const maxRight = (TABS.length - 1 - startIndex.current) * slotW;
+    const maxLeft = -startIndex.current * slotW;
     setLiveOffset(clamp(delta, maxLeft, maxRight));
   };
 
   const onBubblePointerUp = (e: React.PointerEvent) => {
     if (!dragging) return;
     const delta = e.clientX - startX.current;
-    const steps = Math.round(delta / OPT_W);
+    const steps = slotW ? Math.round(delta / slotW) : 0;
     const newIndex = clamp(startIndex.current + steps, 0, TABS.length - 1);
     setDragging(false);
     setLiveOffset(0);
@@ -98,20 +110,22 @@ export function TabBar() {
     if (target !== pathname) router.push(target);
   };
 
-  const displayIndex = dragging
-    ? clamp(startIndex.current + Math.round(liveOffset / OPT_W), 0, TABS.length - 1)
-    : activeIndex;
+  const displayIndex =
+    dragging && slotW
+      ? clamp(startIndex.current + Math.round(liveOffset / slotW), 0, TABS.length - 1)
+      : activeIndex;
 
-  const bubbleTranslate = dragging ? activeIndex * OPT_W + liveOffset : activeIndex * OPT_W;
+  const bubbleTranslate = dragging ? activeIndex * slotW + liveOffset : activeIndex * slotW;
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-50 flex justify-center px-6 pb-[max(1rem,env(safe-area-inset-bottom))]"
+      className="fixed inset-x-0 bottom-0 z-50 px-3 pb-[max(0.5rem,calc(env(safe-area-inset-bottom)-0.375rem))]"
       aria-label="Main navigation"
     >
       <div
-        className="glass-pill relative flex items-center rounded-full"
-        style={{ padding: PILL_PAD, width: OPT_W * TABS.length + PILL_PAD * 2 }}
+        ref={pillRef}
+        className="glass-pill relative flex w-full items-center rounded-full"
+        style={{ padding: PILL_PAD }}
       >
         <div
           className="tab-bubble absolute"
@@ -122,7 +136,7 @@ export function TabBar() {
           style={{
             top: PILL_PAD,
             left: PILL_PAD,
-            width: OPT_W,
+            width: slotW,
             height: `calc(100% - ${PILL_PAD * 2}px)`,
             zIndex: 2,
             cursor: dragging ? "grabbing" : "grab",
@@ -139,12 +153,8 @@ export function TabBar() {
               href={tab.href}
               aria-label={tab.label}
               aria-current={pathname === tab.href ? "page" : undefined}
-              className="tab-icon relative flex shrink-0 items-center justify-center rounded-full"
-              style={{
-                width: OPT_W,
-                height: `calc(100% - ${PILL_PAD * 2}px)`,
-                color: active ? ACTIVE_COLOR : undefined,
-              }}
+              className="tab-icon relative flex flex-1 items-center justify-center rounded-full py-2.5"
+              style={{ color: active ? ACTIVE_COLOR : undefined }}
             >
               <tab.Icon />
             </Link>

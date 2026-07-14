@@ -44,7 +44,7 @@ export default function RootLayout({
         style={{ ["--font-display" as string]: "var(--font-body)" }}
       >
         <Providers>
-          <div className="relative z-10 mx-auto flex min-h-dvh w-full max-w-lg flex-col px-5 pb-32 pt-6 md:max-w-2xl">
+          <div className="relative z-10 mx-auto flex min-h-dvh w-full max-w-lg flex-col px-5 pb-32 pt-[max(1.5rem,env(safe-area-inset-top))] md:max-w-2xl">
             {children}
           </div>
           <TabBar />
