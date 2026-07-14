@@ -20,10 +20,9 @@ interface Stage {
   to: string;
 }
 
-function stageOf(pct: number): Stage {
-  if (pct < 0.3) return { from: "#7c8cff", to: "#a5b4fc" }; // 冷藍紫（剛起步）
-  if (pct < 0.7) return { from: "#38bdf8", to: "#7dd3fc" }; // 天空藍（進行中）
-  return { from: "#1c6ef7", to: "#38bdf8" }; // 品牌藍（同 Tab Bar）
+// 水青藍恆定不變（WaterMinder 式）：水就是水的顏色，進度由水位與環表達
+function stageOf(_pct: number): Stage {
+  return { from: "#0e8fd6", to: "#3fc3f9" };
 }
 
 export function ProgressRing({
@@ -75,10 +74,10 @@ export function ProgressRing({
             }}
           >
             <g className="wave-layer wave-layer--back">
-              <path d={WAVE_PATH} fill={stage.to} opacity={0.14} />
+              <path d={WAVE_PATH} fill={stage.to} opacity={0.3} />
             </g>
             <g className="wave-layer" style={{ transform: "translateX(-85px)" }}>
-              <path d={WAVE_PATH} fill={stage.from} opacity={0.22} />
+              <path d={WAVE_PATH} fill={stage.from} opacity={0.45} />
             </g>
           </g>
         </g>
@@ -121,7 +120,7 @@ export function ProgressRing({
         <div
           className={`font-num mt-3 rounded-full px-3 py-1 text-sm font-bold ${
             complete
-              ? "bg-accent/15 text-accent"
+              ? "bg-black/15 text-white"
               : "bg-surface-2 text-ink-2"
           }`}
         >

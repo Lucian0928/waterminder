@@ -19,15 +19,6 @@ import {
 } from "@/lib/stats";
 import { formatTime } from "@/lib/dates";
 
-function greeting(): string {
-  const h = new Date().getHours();
-  if (h < 5) return "夜深了";
-  if (h < 11) return "早安";
-  if (h < 14) return "午安";
-  if (h < 18) return "下午好";
-  return "晚上好";
-}
-
 export function HomeContent() {
   const hydrated = useHydrated();
   const today = useToday();
@@ -88,11 +79,6 @@ export function HomeContent() {
   return (
     <PageTransition className="flex flex-col gap-6">
       <header>
-        <p className="text-sm font-semibold text-ink-2">
-          {`${new Date().getMonth() + 1}月${new Date().getDate()}日 週${
-            ["日", "一", "二", "三", "四", "五", "六"][new Date().getDay()]
-          } · ${greeting()}`}
-        </p>
         <h1 className="font-display mt-0.5 text-2xl font-bold tracking-tight">
           今日進度
         </h1>

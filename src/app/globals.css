@@ -5,16 +5,16 @@
 :root {
   /* 深色（預設）：深藍灰 + 水藍。材質語言以玻璃 Tab Bar 為基準：
      真實光學陰影、灰階為底、藍色只給「作用中」與主要動作 */
-  --c-bg: 24 29 43; /* #181d2b */
-  --c-surface: 33 42 62; /* #212a3e */
-  --c-surface-2: 42 53 79; /* #2a354f */
-  --c-ink: 238 242 248; /* #eef2f8 */
-  --c-ink-2: 154 167 189; /* #9aa7bd */
-  --c-ink-3: 104 117 142; /* #68758e */
-  --c-accent: 77 148 255; /* #4d94ff（深底上的可讀藍） */
-  --c-accent-deep: 28 110 247; /* #1c6ef7（品牌藍，同 Tab Bar） */
+  --c-bg: 20 26 34; /* #141a22 */
+  --c-surface: 29 37 48; /* #1d2530 */
+  --c-surface-2: 38 49 64; /* #263140 */
+  --c-ink: 234 241 247; /* #eaf1f7 */
+  --c-ink-2: 147 165 181; /* #93a5b5 */
+  --c-ink-3: 100 118 138; /* #64768a */
+  --c-accent: 47 185 247; /* #2fb9f7（WaterMinder 水青藍） */
+  --c-accent-deep: 14 143 214; /* #0e8fd6 */
   --c-cool: 124 140 255; /* #7c8cff */
-  --c-line: 52 63 94; /* #343f5e */
+  --c-line: 51 64 79; /* #33404f */
 
   --card-glow: 0 4px 24px rgba(0, 0, 0, 0.28),
     inset 0 1px 0 rgba(255, 255, 255, 0.07);
@@ -35,14 +35,14 @@
 }
 
 [data-theme="light"] {
-  --c-bg: 238 242 247; /* #eef2f7 */
+  --c-bg: 242 247 250; /* #f2f7fa */
   --c-surface: 255 255 255;
-  --c-surface-2: 241 244 250;
+  --c-surface-2: 240 246 250;
   --c-ink: 22 32 46; /* #16202e */
   --c-ink-2: 90 104 128;
   --c-ink-3: 138 150 172;
-  --c-accent: 28 110 247; /* #1c6ef7 */
-  --c-accent-deep: 11 82 205; /* #0b52cd */
+  --c-accent: 10 154 227; /* #0a9ae3 */
+  --c-accent-deep: 2 119 189; /* #0277bd */
   --c-cool: 92 108 232;
   --c-line: 219 227 238;
 
@@ -68,7 +68,7 @@ body {
   min-height: 100%;
   background-color: rgb(var(--c-bg));
   /* 同 Figma Make demo 的斜向深藍灰漸層 */
-  background-image: linear-gradient(160deg, #181d2b 0%, #232a3e 50%, #1a2030 100%);
+  background-image: linear-gradient(160deg, #141a22 0%, #1b232e 50%, #151b24 100%);
   background-attachment: fixed;
   color: rgb(var(--c-ink));
   font-family: var(--font-body), "PingFang TC", "Noto Sans TC", system-ui,
@@ -79,7 +79,7 @@ body {
 }
 
 [data-theme="light"] body {
-  background-image: linear-gradient(160deg, #f2f5fa 0%, #e9eef6 50%, #eef2f7 100%);
+  background-image: linear-gradient(160deg, #f5f9fc 0%, #ecf3f8 50%, #f2f7fa 100%);
 }
 
 /* 上緣一抹很淡的水藍環境光 */
@@ -91,7 +91,7 @@ body::before {
   z-index: 0;
   background: radial-gradient(
     60% 40% at 50% -10%,
-    rgba(76, 131, 255, 0.12),
+    rgba(47, 185, 247, 0.10),
     transparent 70%
   );
 }
@@ -99,7 +99,7 @@ body::before {
 [data-theme="light"] body::before {
   background: radial-gradient(
     60% 40% at 50% -10%,
-    rgba(28, 110, 247, 0.06),
+    rgba(10, 154, 227, 0.06),
     transparent 70%
   );
 }
@@ -190,12 +190,12 @@ body::before {
 @keyframes ring-glow-pulse {
   0%,
   100% {
-    filter: drop-shadow(0 0 8px rgba(56, 132, 255, 0.5))
-      drop-shadow(0 0 22px rgba(28, 110, 247, 0.28));
+    filter: drop-shadow(0 0 8px rgba(47, 185, 247, 0.5))
+      drop-shadow(0 0 22px rgba(14, 143, 214, 0.28));
   }
   50% {
-    filter: drop-shadow(0 0 14px rgba(56, 132, 255, 0.75))
-      drop-shadow(0 0 38px rgba(28, 110, 247, 0.4));
+    filter: drop-shadow(0 0 14px rgba(47, 185, 247, 0.75))
+      drop-shadow(0 0 38px rgba(14, 143, 214, 0.4));
   }
 }
 
@@ -210,7 +210,7 @@ body::before {
   }
   .ring-complete {
     animation: none;
-    filter: drop-shadow(0 0 10px rgba(56, 132, 255, 0.55));
+    filter: drop-shadow(0 0 10px rgba(47, 185, 247, 0.55));
   }
 }
 
