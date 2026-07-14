@@ -9,37 +9,41 @@ function tint(hex: string, alpha: string): string {
   return `${hex}${alpha}`;
 }
 
+export interface CupCard {
+  id: string;
+  name: string;
+  volumeMl: number;
+  type: DrinkType;
+}
+
 export function DrinkGrid({
-  drinkTypes,
+  cups,
   onAdd,
   onOther,
 }: {
-  drinkTypes: DrinkType[];
-  onAdd: (drink: DrinkType) => void;
+  cups: CupCard[];
+  onAdd: (type: DrinkType, volumeMl: number) => void;
   onOther: () => void;
 }) {
   return (
     <div className="grid grid-cols-2 gap-3">
-      {drinkTypes.map((d) => (
+      {cups.map((c) => (
         <motion.button
-          key={d.id}
+          key={c.id}
           whileTap={{ scale: 0.96 }}
-          onClick={() => onAdd(d)}
+          onClick={() => onAdd(c.type, c.volumeMl)}
           className="flex flex-col gap-1 rounded-2xl p-4 text-left"
           style={{
-            background: tint(d.color, "2b"),
+            background: tint(c.type.color, "2b"),
             boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
           }}
         >
           <div className="flex items-start justify-between">
-            <span className="text-sm font-semibold text-ink-2">{d.name}</span>
-            <DrinkIcon icon={d.icon} className="h-6 w-6" style={{ color: d.color }} />
+            <span className="text-sm font-semibold text-ink-2">{c.name}</span>
+            <DrinkIcon icon={c.type.icon} className="h-6 w-6" style={{ color: c.type.color }} />
           </div>
-          <span
-            className="font-num text-xl font-bold"
-            style={{ color: d.color }}
-          >
-            {d.defaultVolumeMl}ml
+          <span className="font-num text-xl font-bold" style={{ color: c.type.color }}>
+            {c.volumeMl}ml
           </span>
         </motion.button>
       ))}

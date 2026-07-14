@@ -62,7 +62,10 @@ export function OtherDrinksSheet({
   drinkTypes: DrinkType[];
   onAdd: (drink: DrinkType, volumeMl: number) => void;
 }) {
-  const allDrinks = useMemo(() => mergeWithCatalog(drinkTypes), [drinkTypes]);
+  const allDrinks = useMemo(
+    () => mergeWithCatalog(drinkTypes).filter((d) => d.active),
+    [drinkTypes]
+  );
   const [amount, setAmount] = useState("0");
   const [selectedId, setSelectedId] = useState(allDrinks[0]?.id ?? "water");
   const [now, setNow] = useState(() => new Date());

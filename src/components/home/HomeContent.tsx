@@ -3,7 +3,7 @@
 import { useMemo, useRef, useState } from "react";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { ProgressRing } from "./ProgressRing";
-import { DrinkGrid } from "./DrinkGrid";
+import { DrinkGrid, type CupCard } from "./DrinkGrid";
 import { OtherDrinksSheet } from "./OtherDrinksSheet";
 import { Toast, type ToastData } from "@/components/ui/Toast";
 import { useWaterStore } from "@/store/useWaterStore";
@@ -22,13 +22,16 @@ export function HomeContent() {
   const settings = useSettingsStore((s) => s.settings);
   const drinkTypes = useSettingsStore((s) => s.drinkTypes);
 
-  /* My Cup：依 cupIds 順序解析出 Home 捷徑 */
-  const cupDrinks = useMemo(() => {
+  /* My Cup：把每個 Cup 綁定的類別解析出來，供 Home 捷徑使用 */
+  const cupCards = useMemo(() => {
     const byId = new Map(drinkTypes.map((t) => [t.id, t]));
-    return settings.cupIds
-      .map((id) => byId.get(id))
-      .filter((t): t is DrinkType => Boolean(t));
-  }, [drinkTypes, settings.cupIds]);
+    return settings.cups
+      .map((cup) => {
+        const type = byId.get(cup.drinkTypeId);
+        return type ? { id: cup.id, name: cup.name, volumeMl: cup.volumeMl, type } : null;
+      })
+      .filter((c): c is CupCard => c !== null);
+  }, [drinkTypes, settings.cups]);
 
   const [sheetOpen, setSheetOpen] = useState(false);
   const [toast, setToast] = useState<ToastData | null>(null);
@@ -77,8 +80,8 @@ export function HomeContent() {
       </div>
 
       <DrinkGrid
-        drinkTypes={cupDrinks}
-        onAdd={(d) => handleAdd(d, d.defaultVolumeMl)}
+        cups={cupCards}
+        onAdd={handleAdd}
         onOther={() => setSheetOpen(true)}
       />
 

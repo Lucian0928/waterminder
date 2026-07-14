@@ -2,6 +2,7 @@
 
 import { create } from "zustand";
 import type {
+  Cup,
   DrinkType,
   ReminderSettings,
   Settings,
@@ -11,21 +12,24 @@ import type {
 } from "@/types";
 import { getDataProvider } from "@/lib/data";
 import {
+  DEFAULT_CUPS,
   DEFAULT_DRINK_TYPES,
   DEFAULT_SETTINGS,
   LEGACY_ICON_MAP,
   LEGACY_NAME_MAP,
+  cupFromType,
 } from "@/lib/defaults";
 
-/** 舊版中文名稱 / emoji 圖示 → 英文名稱 / icon key 的一次性遷移 */
+/** 舊版中文名稱 / emoji 圖示、缺少 active 欄位的一次性遷移 */
 function migrateTypes(types: DrinkType[]): { types: DrinkType[]; changed: boolean } {
   let changed = false;
   const next = types.map((t) => {
     const name = LEGACY_NAME_MAP[t.name] ?? t.name;
     const icon = LEGACY_ICON_MAP[t.icon] ?? t.icon;
-    if (name !== t.name || icon !== t.icon) {
+    const active = t.active ?? true;
+    if (name !== t.name || icon !== t.icon || active !== t.active) {
       changed = true;
-      return { ...t, name, icon };
+      return { ...t, name, icon, active };
     }
     return t;
   });
@@ -42,7 +46,10 @@ interface SettingsState {
   setVolumeUnit: (unit: VolumeUnit) => void;
   setTheme: (theme: ThemeMode) => void;
   setReminder: (reminder: ReminderSettings) => void;
-  setCupIds: (ids: string[]) => void;
+  setCups: (cups: Cup[]) => void;
+  addCup: (cup: Cup) => void;
+  updateCup: (cup: Cup) => void;
+  deleteCup: (id: string) => void;
   addDrinkType: (type: DrinkType) => void;
   updateDrinkType: (type: DrinkType) => void;
   deleteDrinkType: (id: string) => void;
@@ -74,16 +81,29 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
         ? migrateTypes(types)
         : { types: DEFAULT_DRINK_TYPES, changed: false };
 
-    let settings = saved
+    let settings: Settings = saved
       ? { ...DEFAULT_SETTINGS, ...saved, reminder: { ...DEFAULT_SETTINGS.reminder, ...saved.reminder } }
       : DEFAULT_SETTINGS;
 
-    /* 舊資料沒有 cupIds：以既有杯型的前 5 個作為 Home 捷徑 */
+    /* 遷移 My Cup：舊資料是 cupIds（string[]）或缺少 cups → 轉成 Cup[] */
     let cupChanged = false;
-    if (!Array.isArray(settings.cupIds) || settings.cupIds.length === 0) {
-      settings = { ...settings, cupIds: migrated.types.slice(0, 5).map((t) => t.id) };
+    if (!Array.isArray(settings.cups) || settings.cups.length === 0) {
+      const legacyIds = (saved as unknown as { cupIds?: string[] } | null)?.cupIds;
+      if (Array.isArray(legacyIds) && legacyIds.length > 0) {
+        settings = {
+          ...settings,
+          cups: legacyIds
+            .map((id) => migrated.types.find((t) => t.id === id))
+            .filter((t): t is DrinkType => Boolean(t))
+            .map((t) => cupFromType(t)),
+        };
+      } else {
+        settings = { ...settings, cups: DEFAULT_CUPS };
+      }
       cupChanged = saved != null;
     }
+    // 清掉遺留的舊欄位
+    delete (settings as unknown as { cupIds?: string[] }).cupIds;
 
     set({ hydrated: true, settings, drinkTypes: migrated.types });
     if (migrated.changed) persistTypes(migrated.types);
@@ -114,11 +134,19 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     persistSettings(settings);
   },
 
-  setCupIds: (cupIds) => {
-    const settings = { ...get().settings, cupIds };
+  setCups: (cups) => {
+    const settings = { ...get().settings, cups };
     set({ settings });
     persistSettings(settings);
   },
+
+  addCup: (cup) => get().setCups([...get().settings.cups, cup]),
+
+  updateCup: (cup) =>
+    get().setCups(get().settings.cups.map((c) => (c.id === cup.id ? cup : c))),
+
+  deleteCup: (id) =>
+    get().setCups(get().settings.cups.filter((c) => c.id !== id)),
 
   addDrinkType: (type) => {
     const drinkTypes = [...get().drinkTypes, type];
@@ -138,21 +166,32 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     const drinkTypes = get().drinkTypes.filter((t) => t.id !== id);
     set({ drinkTypes });
     persistTypes(drinkTypes);
-    const { cupIds } = get().settings;
-    if (cupIds.includes(id)) get().setCupIds(cupIds.filter((c) => c !== id));
+    const { cups } = get().settings;
+    if (cups.some((c) => c.drinkTypeId === id)) {
+      get().setCups(cups.filter((c) => c.drinkTypeId !== id));
+    }
   },
 
   importAll: (rawSettings, drinkTypes) => {
+    const migrated = migrateTypes(drinkTypes).types;
+    const legacyIds = (rawSettings as unknown as { cupIds?: string[] }).cupIds;
+    const cups =
+      Array.isArray(rawSettings.cups) && rawSettings.cups.length > 0
+        ? rawSettings.cups
+        : Array.isArray(legacyIds) && legacyIds.length > 0
+          ? legacyIds
+              .map((id) => migrated.find((t) => t.id === id))
+              .filter((t): t is DrinkType => Boolean(t))
+              .map((t) => cupFromType(t))
+          : DEFAULT_CUPS;
     const settings: Settings = {
       ...DEFAULT_SETTINGS,
       ...rawSettings,
       reminder: { ...DEFAULT_SETTINGS.reminder, ...rawSettings.reminder },
-      cupIds:
-        Array.isArray(rawSettings.cupIds) && rawSettings.cupIds.length > 0
-          ? rawSettings.cupIds
-          : drinkTypes.slice(0, 5).map((t) => t.id),
+      cups,
     };
-    set({ settings, drinkTypes });
+    delete (settings as unknown as { cupIds?: string[] }).cupIds;
+    set({ settings, drinkTypes: migrated });
     persistSettings(settings);
     persistTypes(drinkTypes);
   },
