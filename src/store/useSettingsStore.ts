@@ -42,6 +42,7 @@ interface SettingsState {
   setVolumeUnit: (unit: VolumeUnit) => void;
   setTheme: (theme: ThemeMode) => void;
   setReminder: (reminder: ReminderSettings) => void;
+  setCupIds: (ids: string[]) => void;
   addDrinkType: (type: DrinkType) => void;
   updateDrinkType: (type: DrinkType) => void;
   deleteDrinkType: (id: string) => void;
@@ -72,14 +73,21 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       types && types.length > 0
         ? migrateTypes(types)
         : { types: DEFAULT_DRINK_TYPES, changed: false };
-    set({
-      hydrated: true,
-      settings: saved
-        ? { ...DEFAULT_SETTINGS, ...saved, reminder: { ...DEFAULT_SETTINGS.reminder, ...saved.reminder } }
-        : DEFAULT_SETTINGS,
-      drinkTypes: migrated.types,
-    });
+
+    let settings = saved
+      ? { ...DEFAULT_SETTINGS, ...saved, reminder: { ...DEFAULT_SETTINGS.reminder, ...saved.reminder } }
+      : DEFAULT_SETTINGS;
+
+    /* 舊資料沒有 cupIds：以既有杯型的前 5 個作為 Home 捷徑 */
+    let cupChanged = false;
+    if (!Array.isArray(settings.cupIds) || settings.cupIds.length === 0) {
+      settings = { ...settings, cupIds: migrated.types.slice(0, 5).map((t) => t.id) };
+      cupChanged = saved != null;
+    }
+
+    set({ hydrated: true, settings, drinkTypes: migrated.types });
     if (migrated.changed) persistTypes(migrated.types);
+    if (cupChanged) persistSettings(settings);
   },
 
   setGoal: (goal) => {
@@ -106,6 +114,12 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     persistSettings(settings);
   },
 
+  setCupIds: (cupIds) => {
+    const settings = { ...get().settings, cupIds };
+    set({ settings });
+    persistSettings(settings);
+  },
+
   addDrinkType: (type) => {
     const drinkTypes = [...get().drinkTypes, type];
     set({ drinkTypes });
@@ -124,9 +138,20 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     const drinkTypes = get().drinkTypes.filter((t) => t.id !== id);
     set({ drinkTypes });
     persistTypes(drinkTypes);
+    const { cupIds } = get().settings;
+    if (cupIds.includes(id)) get().setCupIds(cupIds.filter((c) => c !== id));
   },
 
-  importAll: (settings, drinkTypes) => {
+  importAll: (rawSettings, drinkTypes) => {
+    const settings: Settings = {
+      ...DEFAULT_SETTINGS,
+      ...rawSettings,
+      reminder: { ...DEFAULT_SETTINGS.reminder, ...rawSettings.reminder },
+      cupIds:
+        Array.isArray(rawSettings.cupIds) && rawSettings.cupIds.length > 0
+          ? rawSettings.cupIds
+          : drinkTypes.slice(0, 5).map((t) => t.id),
+    };
     set({ settings, drinkTypes });
     persistSettings(settings);
     persistTypes(drinkTypes);

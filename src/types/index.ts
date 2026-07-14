@@ -55,6 +55,8 @@ export interface Settings {
   reminder: ReminderSettings;
   /** Home 快速記錄按鈕的容量（ml） */
   quickVolumesMl: number[];
+  /** 釘選在 Home 的捷徑（My Cup），依序對應 drinkTypes 的 id */
+  cupIds: string[];
 }
 
 /** 單日彙總，供統計與圖表使用 */

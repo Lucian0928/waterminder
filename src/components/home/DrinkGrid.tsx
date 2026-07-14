@@ -18,11 +18,9 @@ export function DrinkGrid({
   onAdd: (drink: DrinkType) => void;
   onOther: () => void;
 }) {
-  const cards = drinkTypes.slice(0, 5);
-
   return (
     <div className="grid grid-cols-2 gap-3">
-      {cards.map((d) => (
+      {drinkTypes.map((d) => (
         <motion.button
           key={d.id}
           whileTap={{ scale: 0.96 }}

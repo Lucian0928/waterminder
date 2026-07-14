@@ -131,6 +131,7 @@ export const DEFAULT_SETTINGS: Settings = {
     intervalMinutes: 90,
   },
   quickVolumesMl: [250, 350, 500],
+  cupIds: ["water", "sparkling", "tea", "coffee", "juice"],
 };
 
 export function newId(): string {

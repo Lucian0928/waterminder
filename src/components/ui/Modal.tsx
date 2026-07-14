@@ -24,7 +24,13 @@ export function Modal({
       if (e.key === "Escape") onClose();
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    /* 鎖住背景捲動：否則手勢會捲動底下的頁面而不是視窗內容 */
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
   }, [open, onClose]);
 
   if (!mounted) return null;
@@ -51,7 +57,7 @@ export function Modal({
             role="dialog"
             aria-modal="true"
             aria-label={title}
-            className="glow-card max-h-[86dvh] w-full max-w-md overflow-y-auto rounded-t-3xl p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:rounded-3xl"
+            className="glow-card max-h-[86dvh] w-full max-w-md overflow-y-auto overscroll-contain rounded-t-3xl p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:rounded-3xl"
           >
             <div className="mb-5 flex items-center justify-between">
               <h2 className="font-display text-lg font-bold">{title}</h2>

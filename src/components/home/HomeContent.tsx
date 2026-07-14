@@ -22,6 +22,14 @@ export function HomeContent() {
   const settings = useSettingsStore((s) => s.settings);
   const drinkTypes = useSettingsStore((s) => s.drinkTypes);
 
+  /* My Cup：依 cupIds 順序解析出 Home 捷徑 */
+  const cupDrinks = useMemo(() => {
+    const byId = new Map(drinkTypes.map((t) => [t.id, t]));
+    return settings.cupIds
+      .map((id) => byId.get(id))
+      .filter((t): t is DrinkType => Boolean(t));
+  }, [drinkTypes, settings.cupIds]);
+
   const [sheetOpen, setSheetOpen] = useState(false);
   const [toast, setToast] = useState<ToastData | null>(null);
   const lastLogId = useRef<string | null>(null);
@@ -69,7 +77,7 @@ export function HomeContent() {
       </div>
 
       <DrinkGrid
-        drinkTypes={drinkTypes}
+        drinkTypes={cupDrinks}
         onAdd={(d) => handleAdd(d, d.defaultVolumeMl)}
         onOther={() => setSheetOpen(true)}
       />

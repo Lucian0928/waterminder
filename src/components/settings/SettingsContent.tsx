@@ -4,7 +4,7 @@ import { PageTransition } from "@/components/layout/PageTransition";
 import { GlowCard } from "@/components/ui/GlowCard";
 import { GoalSetting } from "./GoalSetting";
 import { UnitSetting } from "./UnitSetting";
-import { DrinkTypeManager } from "./DrinkTypeManager";
+import { DrinksManager } from "./DrinksManager";
 import { ReminderSetting } from "./ReminderSetting";
 import { ThemeToggle } from "./ThemeToggle";
 import { DataSection } from "./DataSection";
@@ -52,9 +52,7 @@ export function SettingsContent() {
         <UnitSetting />
       </Section>
 
-      <Section title="My Cup">
-        <DrinkTypeManager />
-      </Section>
+      <DrinksManager />
 
       <Section title="Reminders">
         <ReminderSetting />
