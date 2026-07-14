@@ -57,26 +57,30 @@ export function Modal({
             role="dialog"
             aria-modal="true"
             aria-label={title}
-            className="glow-card max-h-[86dvh] w-full max-w-md overflow-y-auto overscroll-contain rounded-t-3xl p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:rounded-3xl"
+            /* glow-card 會強制 overflow:hidden，所以外層只負責外觀，
+               捲動交給內層容器（否則長內容如水合係數/儲存鈕會被裁掉） */
+            className="glow-card flex max-h-[86dvh] w-full max-w-md flex-col rounded-t-3xl sm:rounded-3xl"
           >
-            <div className="mb-5 flex items-center justify-between">
-              <h2 className="font-display text-lg font-bold">{title}</h2>
-              <button
-                onClick={onClose}
-                aria-label="Close"
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-2 text-ink-2 transition-colors hover:text-ink"
-              >
-                <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
-                  <path
-                    d="m6 6 12 12M18 6 6 18"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </button>
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+              <div className="mb-5 flex items-center justify-between">
+                <h2 className="font-display text-lg font-bold">{title}</h2>
+                <button
+                  onClick={onClose}
+                  aria-label="Close"
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-2 text-ink-2 transition-colors hover:text-ink"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
+                    <path
+                      d="m6 6 12 12M18 6 6 18"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </button>
+              </div>
+              {children}
             </div>
-            {children}
           </motion.div>
         </motion.div>
       )}
