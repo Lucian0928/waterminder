@@ -83,6 +83,19 @@ export function mergeWithCatalog(userTypes: DrinkType[]): DrinkType[] {
   return [...userTypes, ...CATALOG_DRINK_TYPES.filter((t) => !ids.has(t.id))];
 }
 
+/** 所有可加入「My Cup」的飲品類別（預設 + 目錄，依 id 去重） */
+export const ALL_CATALOG: DrinkType[] = (() => {
+  const seen = new Set<string>();
+  const out: DrinkType[] = [];
+  for (const t of [...DEFAULT_DRINK_TYPES, ...CATALOG_DRINK_TYPES]) {
+    if (!seen.has(t.id)) {
+      seen.add(t.id);
+      out.push(t);
+    }
+  }
+  return out;
+})();
+
 /* 舊版（中文名稱 + emoji）→ 新版的一次性遷移對照 */
 export const LEGACY_NAME_MAP: Record<string, string> = {
   水: "Water",

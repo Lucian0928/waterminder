@@ -1,7 +1,8 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 export function Modal({
   open,
@@ -14,6 +15,9 @@ export function Modal({
   title: string;
   children: React.ReactNode;
 }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -23,7 +27,11 @@ export function Modal({
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
-  return (
+  if (!mounted) return null;
+
+  /* Portal 到 body：脫離 PageTransition 的 transform 堆疊上下文，
+     否則 fixed 定位會被限制在頁面容器內、被下方卡片蓋住 */
+  return createPortal(
     <AnimatePresence>
       {open && (
         <motion.div
@@ -66,6 +74,7 @@ export function Modal({
           </motion.div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }

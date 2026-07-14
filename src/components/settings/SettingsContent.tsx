@@ -52,7 +52,7 @@ export function SettingsContent() {
         <UnitSetting />
       </Section>
 
-      <Section title="Drinks">
+      <Section title="My Cup">
         <DrinkTypeManager />
       </Section>
 

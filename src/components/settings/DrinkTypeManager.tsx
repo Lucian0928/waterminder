@@ -5,7 +5,7 @@ import { useSettingsStore } from "@/store/useSettingsStore";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { DrinkIcon, DRINK_ICON_KEYS } from "@/components/ui/DrinkIcon";
-import { newId } from "@/lib/defaults";
+import { ALL_CATALOG, newId } from "@/lib/defaults";
 import type { DrinkType } from "@/types";
 
 const COLOR_CHOICES = [
@@ -58,6 +58,14 @@ export function DrinkTypeManager() {
   const deleteDrinkType = useSettingsStore((s) => s.deleteDrinkType);
 
   const [draft, setDraft] = useState<Draft | null>(null);
+  const [browseOpen, setBrowseOpen] = useState(false);
+
+  const cupIds = new Set(drinkTypes.map((t) => t.id));
+
+  const toggleCatalog = (t: DrinkType) => {
+    if (cupIds.has(t.id)) deleteDrinkType(t.id);
+    else addDrinkType({ ...t });
+  };
 
   const openEdit = (t: DrinkType) =>
     setDraft({
@@ -89,6 +97,11 @@ export function DrinkTypeManager() {
 
   return (
     <div className="flex flex-col gap-3">
+      <p className="text-xs text-ink-3">
+        The drinks in your cup become the quick-add shortcuts on your Home
+        screen.
+      </p>
+
       <ul className="flex flex-col gap-2">
         {drinkTypes.map((t) => (
           <li key={t.id}>
@@ -114,9 +127,62 @@ export function DrinkTypeManager() {
         ))}
       </ul>
 
-      <Button variant="ghost" onClick={() => setDraft(EMPTY_DRAFT)}>
-        ＋ Add Drink
-      </Button>
+      <div className="grid grid-cols-2 gap-2.5">
+        <Button variant="ghost" onClick={() => setBrowseOpen(true)}>
+          Drinks
+        </Button>
+        <Button variant="ghost" onClick={() => setDraft(EMPTY_DRAFT)}>
+          ＋ Add Drink
+        </Button>
+      </div>
+
+      {/* Drinks 目錄瀏覽：加入/移除 My Cup */}
+      <Modal
+        open={browseOpen}
+        onClose={() => setBrowseOpen(false)}
+        title="Drinks"
+      >
+        <p className="mb-3 text-xs text-ink-3">
+          Tap a drink to add it to your cup. Tap again to remove it.
+        </p>
+        <div className="grid grid-cols-2 gap-2.5">
+          {ALL_CATALOG.map((t) => {
+            const inCup = cupIds.has(t.id);
+            return (
+              <button
+                key={t.id}
+                onClick={() => toggleCatalog(t)}
+                aria-pressed={inCup}
+                className={`relative flex items-center gap-2.5 rounded-2xl border p-3 text-left transition-all ${
+                  inCup ? "border-accent bg-accent/10" : "border-line bg-surface-2"
+                }`}
+              >
+                <span
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+                  style={{ backgroundColor: `${t.color}1f` }}
+                >
+                  <DrinkIcon icon={t.icon} className="h-5 w-5" style={{ color: t.color }} />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-semibold text-ink">
+                    {t.name}
+                  </span>
+                  <span className="font-num block text-xs text-ink-3">
+                    {t.defaultVolumeMl} ml
+                  </span>
+                </span>
+                {inCup && (
+                  <span className="absolute right-2 top-2 text-accent">
+                    <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden>
+                      <path d="M5 12.5l4 4L19 6.5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </Modal>
 
       <Modal
         open={draft !== null}
