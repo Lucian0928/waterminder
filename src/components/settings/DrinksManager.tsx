@@ -6,7 +6,7 @@ import { GlowCard } from "@/components/ui/GlowCard";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { DrinkIcon, DRINK_ICON_KEYS } from "@/components/ui/DrinkIcon";
-import { cupFromType, mergeWithCatalog, newId } from "@/lib/defaults";
+import { mergeWithCatalog, newId } from "@/lib/defaults";
 import type { Cup, DrinkType } from "@/types";
 
 const COLOR_CHOICES = [
@@ -16,7 +16,7 @@ const COLOR_CHOICES = [
   "#8B5CF6", "#6366F1", "#92400E", "#B45309", "#57534E", "#334155",
 ];
 
-/* ── 圖示圓 ─────────────────────────────────────────── */
+/* ── 小元件 ─────────────────────────────────────────── */
 
 function IconCircle({
   type,
@@ -60,6 +60,31 @@ function CloseIcon() {
   );
 }
 
+/** 設定頁的可點列（帶前導圖示 + 右側值 + chevron） */
+function NavRow({
+  leading,
+  label,
+  value,
+  onClick,
+}: {
+  leading?: React.ReactNode;
+  label: string;
+  value?: React.ReactNode;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="flex w-full items-center gap-3 py-3 text-left"
+    >
+      {leading}
+      <span className="flex-1 font-semibold text-ink">{label}</span>
+      {value != null && <span className="text-sm font-semibold text-ink-3">{value}</span>}
+      <Chevron />
+    </button>
+  );
+}
+
 /* ── 草稿型別 ───────────────────────────────────────── */
 
 interface CupDraft {
@@ -68,7 +93,6 @@ interface CupDraft {
   name: string;
   volume: string;
 }
-
 interface TypeDraft {
   id: string | null;
   name: string;
@@ -78,6 +102,9 @@ interface TypeDraft {
   active: boolean;
   isBuiltIn: boolean;
 }
+
+type Sheet = "cups" | "drinks" | null;
+type Picker = "icon" | "color" | null;
 
 export function DrinksManager() {
   const drinkTypes = useSettingsStore((s) => s.drinkTypes);
@@ -89,22 +116,23 @@ export function DrinksManager() {
   const updateCup = useSettingsStore((s) => s.updateCup);
   const deleteCup = useSettingsStore((s) => s.deleteCup);
 
+  const [sheet, setSheet] = useState<Sheet>(null);
   const [cupDraft, setCupDraft] = useState<CupDraft | null>(null);
   const [typeDraft, setTypeDraft] = useState<TypeDraft | null>(null);
+  const [picker, setPicker] = useState<Picker>(null);
+  const [iconQuery, setIconQuery] = useState("");
 
-  /* 全部飲品類別（使用者杯型 + 內建目錄，依 id 去重） */
   const allTypes = useMemo(() => mergeWithCatalog(drinkTypes), [drinkTypes]);
   const typeById = useMemo(() => new Map(allTypes.map((t) => [t.id, t])), [allTypes]);
   const inLibrary = useMemo(() => new Set(drinkTypes.map((t) => t.id)), [drinkTypes]);
-
   const cups = settings.cups;
 
-  /* ── Cup 儲存 ───────────────────────────────────── */
+  /* ── 儲存 ───────────────────────────────────────── */
   const saveCup = () => {
     if (!cupDraft) return;
     const type = typeById.get(cupDraft.drinkTypeId);
     if (!type) return;
-    if (!inLibrary.has(type.id)) addDrinkType({ ...type }); // 確保 Home 能解析
+    if (!inLibrary.has(type.id)) addDrinkType({ ...type });
     const volumeMl = Math.max(10, Math.round(Number(cupDraft.volume) || 0));
     const cup: Cup = {
       id: cupDraft.id ?? newId(),
@@ -117,7 +145,6 @@ export function DrinksManager() {
     setCupDraft(null);
   };
 
-  /* ── Type 儲存 ──────────────────────────────────── */
   const saveType = () => {
     if (!typeDraft) return;
     const existing = typeById.get(typeDraft.id ?? "");
@@ -132,26 +159,45 @@ export function DrinksManager() {
       isBuiltIn: typeDraft.isBuiltIn,
     };
     if (typeDraft.id && inLibrary.has(typeDraft.id)) updateDrinkType(type);
-    else addDrinkType(type); // 目錄類別首次編輯 → 加入使用者清單
+    else addDrinkType(type);
     setTypeDraft(null);
   };
 
-  const cupPreviewType =
-    cupDraft ? typeById.get(cupDraft.drinkTypeId) ?? allTypes[0] : undefined;
-
+  const cupPreviewType = cupDraft ? typeById.get(cupDraft.drinkTypeId) ?? allTypes[0] : undefined;
   const isCustomColor = typeDraft
     ? !COLOR_CHOICES.some((c) => c.toLowerCase() === typeDraft.color.toLowerCase())
     : false;
+  const filteredIcons = DRINK_ICON_KEYS.filter((k) =>
+    k.includes(iconQuery.trim().toLowerCase())
+  );
+
+  const waterType = typeById.get("water") ?? allTypes[0];
+  const drinksType = typeById.get("soda") ?? allTypes[0];
 
   return (
     <>
-      {/* ── My Cup ─────────────────────────────────── */}
-      <GlowCard className="p-5">
-        <h2 className="font-display mb-1 text-base font-bold">My Cup</h2>
-        <p className="mb-4 text-xs text-ink-3">
+      {/* ── 摺疊入口 ───────────────────────────────── */}
+      <GlowCard className="px-5 py-2">
+        <div className="divide-y divide-line">
+          <NavRow
+            leading={waterType ? <IconCircle type={waterType} size={34} /> : undefined}
+            label="My Cup"
+            value={String(cups.length)}
+            onClick={() => setSheet("cups")}
+          />
+          <NavRow
+            leading={drinksType ? <IconCircle type={drinksType} size={34} /> : undefined}
+            label="Drinks"
+            onClick={() => setSheet("drinks")}
+          />
+        </div>
+      </GlowCard>
+
+      {/* ── My Cup 清單 ───────────────────────────── */}
+      <Modal open={sheet === "cups"} onClose={() => setSheet(null)} title="My Cup">
+        <p className="mb-3 text-xs text-ink-3">
           Quick-add shortcuts on your Home screen. Each cup is a drink at a set amount.
         </p>
-
         <ul className="flex flex-col gap-2">
           {cups.map((cup) => {
             const type = typeById.get(cup.drinkTypeId);
@@ -192,7 +238,6 @@ export function DrinksManager() {
             );
           })}
         </ul>
-
         <Button
           variant="ghost"
           className="mt-3 w-full"
@@ -207,15 +252,13 @@ export function DrinksManager() {
         >
           ＋ Add Cup
         </Button>
-      </GlowCard>
+      </Modal>
 
-      {/* ── Drinks ─────────────────────────────────── */}
-      <GlowCard className="p-5">
-        <h2 className="font-display mb-1 text-base font-bold">Drinks</h2>
-        <p className="mb-4 text-xs text-ink-3">
+      {/* ── Drinks 清單 ───────────────────────────── */}
+      <Modal open={sheet === "drinks"} onClose={() => setSheet(null)} title="Drinks">
+        <p className="mb-3 text-xs text-ink-3">
           Every drink type you can log. Tap to edit its icon, color and hydration.
         </p>
-
         <ul className="flex flex-col gap-2">
           {allTypes.map((t) => (
             <li key={t.id}>
@@ -243,7 +286,6 @@ export function DrinksManager() {
             </li>
           ))}
         </ul>
-
         <Button
           variant="ghost"
           className="mt-3 w-full"
@@ -261,7 +303,7 @@ export function DrinksManager() {
         >
           ＋ Drink
         </Button>
-      </GlowCard>
+      </Modal>
 
       {/* ── Cup 編輯器 ─────────────────────────────── */}
       <Modal
@@ -302,7 +344,6 @@ export function DrinksManager() {
                         setCupDraft({
                           ...cupDraft,
                           drinkTypeId: t.id,
-                          // 名稱若仍是預設，跟著換
                           name:
                             cupDraft.name === "" || cupDraft.name === cupPreviewType.name
                               ? t.name
@@ -361,7 +402,7 @@ export function DrinksManager() {
         )}
       </Modal>
 
-      {/* ── Drink 類別編輯器 ───────────────────────── */}
+      {/* ── Drink 類別編輯器（Icon / Color 改成可點列） ── */}
       <Modal
         open={typeDraft !== null}
         onClose={() => setTypeDraft(null)}
@@ -399,70 +440,35 @@ export function DrinksManager() {
               />
             </label>
 
-            <div>
-              <span className="text-xs font-semibold text-ink-3">Icon</span>
-              <div className="mt-2 grid grid-cols-6 gap-2">
-                {DRINK_ICON_KEYS.map((icon) => (
-                  <button
-                    key={icon}
-                    onClick={() => setTypeDraft({ ...typeDraft, icon })}
-                    aria-label={icon}
-                    aria-pressed={typeDraft.icon === icon}
-                    className={`flex h-11 items-center justify-center rounded-xl border transition-all ${
-                      typeDraft.icon === icon ? "border-accent bg-accent/10" : "border-line bg-surface-2"
-                    }`}
-                    style={{ color: typeDraft.icon === icon ? typeDraft.color : "rgb(var(--c-ink-2))" }}
-                  >
-                    <DrinkIcon icon={icon} className="h-5 w-5" />
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <span className="text-xs font-semibold text-ink-3">Color</span>
-              <div className="mt-2 grid grid-cols-8 gap-2.5">
-                {COLOR_CHOICES.map((color) => (
-                  <button
-                    key={color}
-                    onClick={() => setTypeDraft({ ...typeDraft, color })}
-                    aria-label={`Color ${color}`}
-                    aria-pressed={typeDraft.color.toLowerCase() === color.toLowerCase()}
-                    className={`h-8 w-8 rounded-full transition-transform ${
-                      typeDraft.color.toLowerCase() === color.toLowerCase()
-                        ? "scale-110 ring-2 ring-ink ring-offset-2 ring-offset-surface"
-                        : ""
-                    }`}
-                    style={{ backgroundColor: color }}
-                  />
-                ))}
-                {/* 自訂顏色：開啟系統色盤，可選任意顏色 */}
-                <label
-                  className={`relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-full transition-transform ${
-                    isCustomColor ? "scale-110 ring-2 ring-ink ring-offset-2 ring-offset-surface" : ""
-                  }`}
-                  style={{
-                    background: isCustomColor
-                      ? typeDraft.color
-                      : "conic-gradient(from 0deg,#ef4444,#eab308,#22c55e,#06b6d4,#3b82f6,#a855f7,#ec4899,#ef4444)",
-                  }}
-                  aria-label="Custom color"
+            <div className="overflow-hidden rounded-2xl border border-line bg-surface-2">
+              <button
+                onClick={() => {
+                  setIconQuery("");
+                  setPicker("icon");
+                }}
+                className="flex w-full items-center gap-3 px-4 py-3.5 text-left"
+              >
+                <span className="flex-1 text-sm font-semibold text-ink">Icon</span>
+                <span
+                  className="flex h-8 w-8 items-center justify-center rounded-full"
+                  style={{ background: typeDraft.color }}
                 >
-                  <input
-                    type="color"
-                    value={typeDraft.color}
-                    onChange={(e) => setTypeDraft({ ...typeDraft, color: e.target.value })}
-                    className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-                  />
-                  {!isCustomColor && (
-                    <span className="pointer-events-none flex h-4 w-4 items-center justify-center rounded-full bg-white/90">
-                      <svg viewBox="0 0 24 24" fill="none" className="h-3 w-3 text-ink" aria-hidden>
-                        <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
-                      </svg>
-                    </span>
-                  )}
-                </label>
-              </div>
+                  <DrinkIcon icon={typeDraft.icon} className="h-4 w-4 text-white" />
+                </span>
+                <Chevron />
+              </button>
+              <div className="mx-4 h-px bg-line" />
+              <button
+                onClick={() => setPicker("color")}
+                className="flex w-full items-center gap-3 px-4 py-3.5 text-left"
+              >
+                <span className="flex-1 text-sm font-semibold text-ink">Color</span>
+                <span
+                  className="h-7 w-7 rounded-full"
+                  style={{ background: typeDraft.color }}
+                />
+                <Chevron />
+              </button>
             </div>
 
             <div>
@@ -504,6 +510,102 @@ export function DrinksManager() {
                 Save
               </Button>
             </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* ── Icon 選擇器 ───────────────────────────── */}
+      <Modal open={picker === "icon"} onClose={() => setPicker(null)} title="Icon">
+        {typeDraft && (
+          <div className="flex flex-col gap-3">
+            <input
+              type="search"
+              value={iconQuery}
+              placeholder="Search"
+              onChange={(e) => setIconQuery(e.target.value)}
+              className="rounded-full border border-line bg-surface-2 px-4 py-2.5 text-sm text-ink"
+            />
+            <div className="grid grid-cols-5 gap-2.5">
+              {filteredIcons.map((icon) => {
+                const active = icon === typeDraft.icon;
+                return (
+                  <button
+                    key={icon}
+                    onClick={() => {
+                      setTypeDraft({ ...typeDraft, icon });
+                      setPicker(null);
+                    }}
+                    aria-label={icon}
+                    aria-pressed={active}
+                    className={`flex aspect-square items-center justify-center rounded-full ${
+                      active ? "ring-2 ring-accent ring-offset-2 ring-offset-surface" : ""
+                    }`}
+                    style={{ background: active ? typeDraft.color : "rgb(var(--c-surface-2))" }}
+                  >
+                    <DrinkIcon
+                      icon={icon}
+                      className="h-6 w-6"
+                      style={{ color: active ? "#fff" : "rgb(var(--c-ink-2))" }}
+                    />
+                  </button>
+                );
+              })}
+            </div>
+            {filteredIcons.length === 0 && (
+              <p className="py-6 text-center text-sm text-ink-3">No icons found.</p>
+            )}
+          </div>
+        )}
+      </Modal>
+
+      {/* ── Color 選擇器 ──────────────────────────── */}
+      <Modal open={picker === "color"} onClose={() => setPicker(null)} title="Choose Color">
+        {typeDraft && (
+          <div className="grid grid-cols-5 gap-3">
+            {COLOR_CHOICES.map((color) => {
+              const active = typeDraft.color.toLowerCase() === color.toLowerCase();
+              return (
+                <button
+                  key={color}
+                  onClick={() => {
+                    setTypeDraft({ ...typeDraft, color });
+                    setPicker(null);
+                  }}
+                  aria-label={`Color ${color}`}
+                  aria-pressed={active}
+                  className={`aspect-square rounded-full transition-transform ${
+                    active ? "scale-110 ring-2 ring-ink ring-offset-2 ring-offset-surface" : ""
+                  }`}
+                  style={{ backgroundColor: color }}
+                />
+              );
+            })}
+            {/* 自訂顏色 */}
+            <label
+              className={`relative flex aspect-square cursor-pointer items-center justify-center rounded-full ${
+                isCustomColor ? "scale-110 ring-2 ring-ink ring-offset-2 ring-offset-surface" : ""
+              }`}
+              style={{
+                background: isCustomColor
+                  ? typeDraft.color
+                  : "conic-gradient(from 0deg,#ef4444,#eab308,#22c55e,#06b6d4,#3b82f6,#a855f7,#ec4899,#ef4444)",
+              }}
+              aria-label="Custom color"
+            >
+              <input
+                type="color"
+                value={typeDraft.color}
+                onChange={(e) => setTypeDraft({ ...typeDraft, color: e.target.value })}
+                className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+              />
+              {!isCustomColor && (
+                <span className="pointer-events-none flex h-5 w-5 items-center justify-center rounded-full bg-white/90">
+                  <svg viewBox="0 0 24 24" fill="none" className="h-3.5 w-3.5 text-ink" aria-hidden>
+                    <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
+                  </svg>
+                </span>
+              )}
+            </label>
           </div>
         )}
       </Modal>
