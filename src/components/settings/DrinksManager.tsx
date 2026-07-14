@@ -10,9 +10,10 @@ import { cupFromType, mergeWithCatalog, newId } from "@/lib/defaults";
 import type { Cup, DrinkType } from "@/types";
 
 const COLOR_CHOICES = [
-  "#3B82F6", "#60A5FA", "#0EA5E9", "#06B6D4", "#14B8A6", "#22C55E", "#84CC16", "#EAB308",
-  "#F59E0B", "#F97316", "#EF4444", "#F43F5E", "#EC4899", "#A855F7", "#8B5CF6", "#6366F1",
-  "#92400E", "#78716C", "#94A3B8", "#334155",
+  "#3B82F6", "#2563EB", "#1D4ED8", "#0EA5E9", "#38BDF8", "#06B6D4", "#14B8A6", "#10B981",
+  "#22C55E", "#4ADE80", "#84CC16", "#A3E635", "#EAB308", "#FACC15", "#F59E0B", "#FB923C",
+  "#F97316", "#EF4444", "#DC2626", "#F43F5E", "#FB7185", "#EC4899", "#D946EF", "#A855F7",
+  "#8B5CF6", "#6366F1", "#92400E", "#B45309", "#57534E", "#334155",
 ];
 
 /* ── 圖示圓 ─────────────────────────────────────────── */
@@ -137,6 +138,10 @@ export function DrinksManager() {
 
   const cupPreviewType =
     cupDraft ? typeById.get(cupDraft.drinkTypeId) ?? allTypes[0] : undefined;
+
+  const isCustomColor = typeDraft
+    ? !COLOR_CHOICES.some((c) => c.toLowerCase() === typeDraft.color.toLowerCase())
+    : false;
 
   return (
     <>
@@ -422,15 +427,41 @@ export function DrinksManager() {
                     key={color}
                     onClick={() => setTypeDraft({ ...typeDraft, color })}
                     aria-label={`Color ${color}`}
-                    aria-pressed={typeDraft.color === color}
+                    aria-pressed={typeDraft.color.toLowerCase() === color.toLowerCase()}
                     className={`h-8 w-8 rounded-full transition-transform ${
-                      typeDraft.color === color
+                      typeDraft.color.toLowerCase() === color.toLowerCase()
                         ? "scale-110 ring-2 ring-ink ring-offset-2 ring-offset-surface"
                         : ""
                     }`}
                     style={{ backgroundColor: color }}
                   />
                 ))}
+                {/* 自訂顏色：開啟系統色盤，可選任意顏色 */}
+                <label
+                  className={`relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-full transition-transform ${
+                    isCustomColor ? "scale-110 ring-2 ring-ink ring-offset-2 ring-offset-surface" : ""
+                  }`}
+                  style={{
+                    background: isCustomColor
+                      ? typeDraft.color
+                      : "conic-gradient(from 0deg,#ef4444,#eab308,#22c55e,#06b6d4,#3b82f6,#a855f7,#ec4899,#ef4444)",
+                  }}
+                  aria-label="Custom color"
+                >
+                  <input
+                    type="color"
+                    value={typeDraft.color}
+                    onChange={(e) => setTypeDraft({ ...typeDraft, color: e.target.value })}
+                    className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                  />
+                  {!isCustomColor && (
+                    <span className="pointer-events-none flex h-4 w-4 items-center justify-center rounded-full bg-white/90">
+                      <svg viewBox="0 0 24 24" fill="none" className="h-3 w-3 text-ink" aria-hidden>
+                        <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
+                      </svg>
+                    </span>
+                  )}
+                </label>
               </div>
             </div>
 
