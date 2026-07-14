@@ -11,7 +11,7 @@ function useThemeSync() {
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
     const meta = document.querySelector('meta[name="theme-color"]');
-    meta?.setAttribute("content", theme === "dark" ? "#141a22" : "#f2f7fa");
+    meta?.setAttribute("content", theme === "dark" ? "#141a22" : "#EEF4FB");
   }, [theme]);
 }
 

@@ -1,0 +1,68 @@
+"use client";
+
+import { motion } from "framer-motion";
+import type { DrinkType } from "@/types";
+
+/** hex 色 + 透明度 → 卡片粉彩底 */
+function tint(hex: string, alpha: string): string {
+  return `${hex}${alpha}`;
+}
+
+export function DrinkGrid({
+  drinkTypes,
+  onAdd,
+  onOther,
+}: {
+  drinkTypes: DrinkType[];
+  onAdd: (drink: DrinkType) => void;
+  onOther: () => void;
+}) {
+  const cards = drinkTypes.slice(0, 5);
+
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      {cards.map((d) => (
+        <motion.button
+          key={d.id}
+          whileTap={{ scale: 0.96 }}
+          onClick={() => onAdd(d)}
+          className="flex flex-col gap-1 rounded-2xl p-4 text-left"
+          style={{
+            background: tint(d.color, "2b"),
+            boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+          }}
+        >
+          <div className="flex items-start justify-between">
+            <span className="text-sm font-semibold text-ink-2">{d.name}</span>
+            <span className="text-xl leading-none" aria-hidden>
+              {d.icon}
+            </span>
+          </div>
+          <span
+            className="font-num text-xl font-bold"
+            style={{ color: d.color }}
+          >
+            {d.defaultVolumeMl}ml
+          </span>
+        </motion.button>
+      ))}
+
+      <motion.button
+        whileTap={{ scale: 0.96 }}
+        onClick={onOther}
+        className="flex flex-col gap-1 rounded-2xl bg-surface-2 p-4 text-left"
+        style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}
+      >
+        <div className="flex items-start justify-between">
+          <span className="text-sm font-semibold text-ink-2">Other Drinks</span>
+          <svg width="26" height="26" viewBox="0 0 28 28" fill="none" aria-hidden>
+            <circle cx="9" cy="14" r="2" fill="rgb(var(--c-ink-3))" />
+            <circle cx="14" cy="14" r="2" fill="rgb(var(--c-ink-3))" />
+            <circle cx="19" cy="14" r="2" fill="rgb(var(--c-ink-3))" />
+          </svg>
+        </div>
+        <span className="text-xl font-bold text-ink-2">+ Add</span>
+      </motion.button>
+    </div>
+  );
+}
