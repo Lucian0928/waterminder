@@ -1,5 +1,5 @@
 /* WaterMinder Service Worker：離線快取 + 通知 */
-const CACHE = "waterminder-v3";
+const CACHE = "waterminder-v4";
 const PRECACHE = ["/", "/history", "/settings", "/manifest.json"];
 
 self.addEventListener("install", (event) => {
@@ -65,8 +65,8 @@ self.addEventListener("fetch", (event) => {
 self.addEventListener("message", (event) => {
   if (event.data?.type === "SHOW_NOTIFICATION") {
     const { title, body } = event.data;
-    self.registration.showNotification(title || "該喝水囉 💧", {
-      body: body || "補充一杯水，保持今天的節奏。",
+    self.registration.showNotification(title || "Time to hydrate 💧", {
+      body: body || "Have a glass of water and keep your pace today.",
       icon: "/icons/icon-192.png",
       badge: "/icons/icon-192.png",
       tag: "waterminder-reminder",
@@ -92,8 +92,8 @@ self.addEventListener("notificationclick", (event) => {
 self.addEventListener("push", (event) => {
   const data = event.data?.json?.() ?? {};
   event.waitUntil(
-    self.registration.showNotification(data.title || "該喝水囉 💧", {
-      body: data.body || "補充一杯水，保持今天的節奏。",
+    self.registration.showNotification(data.title || "Time to hydrate 💧", {
+      body: data.body || "Have a glass of water and keep your pace today.",
       icon: "/icons/icon-192.png",
       tag: "waterminder-reminder",
     })

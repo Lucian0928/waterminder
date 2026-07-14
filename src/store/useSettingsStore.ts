@@ -10,7 +10,27 @@ import type {
   VolumeUnit,
 } from "@/types";
 import { getDataProvider } from "@/lib/data";
-import { DEFAULT_DRINK_TYPES, DEFAULT_SETTINGS } from "@/lib/defaults";
+import {
+  DEFAULT_DRINK_TYPES,
+  DEFAULT_SETTINGS,
+  LEGACY_ICON_MAP,
+  LEGACY_NAME_MAP,
+} from "@/lib/defaults";
+
+/** 舊版中文名稱 / emoji 圖示 → 英文名稱 / icon key 的一次性遷移 */
+function migrateTypes(types: DrinkType[]): { types: DrinkType[]; changed: boolean } {
+  let changed = false;
+  const next = types.map((t) => {
+    const name = LEGACY_NAME_MAP[t.name] ?? t.name;
+    const icon = LEGACY_ICON_MAP[t.icon] ?? t.icon;
+    if (name !== t.name || icon !== t.icon) {
+      changed = true;
+      return { ...t, name, icon };
+    }
+    return t;
+  });
+  return { types: next, changed };
+}
 
 interface SettingsState {
   hydrated: boolean;
@@ -48,13 +68,18 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       provider.getSettings(),
       provider.getDrinkTypes(),
     ]);
+    const migrated =
+      types && types.length > 0
+        ? migrateTypes(types)
+        : { types: DEFAULT_DRINK_TYPES, changed: false };
     set({
       hydrated: true,
       settings: saved
         ? { ...DEFAULT_SETTINGS, ...saved, reminder: { ...DEFAULT_SETTINGS.reminder, ...saved.reminder } }
         : DEFAULT_SETTINGS,
-      drinkTypes: types && types.length > 0 ? types : DEFAULT_DRINK_TYPES,
+      drinkTypes: migrated.types,
     });
+    if (migrated.changed) persistTypes(migrated.types);
   },
 
   setGoal: (goal) => {

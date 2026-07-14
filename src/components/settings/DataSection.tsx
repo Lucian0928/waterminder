@@ -47,9 +47,9 @@ export function DataSection() {
       }
       importLogs(payload.logs);
       importAll(payload.settings, payload.drinkTypes);
-      setMessage(`已匯入 ${payload.logs.length} 筆記錄`);
+      setMessage(`Imported ${payload.logs.length} logs`);
     } catch {
-      setMessage("匯入失敗：檔案格式不符");
+      setMessage("Import failed: unrecognized file format");
     }
   };
 
@@ -57,10 +57,10 @@ export function DataSection() {
     <div className="flex flex-col gap-3">
       <div className="grid grid-cols-2 gap-2.5">
         <Button variant="ghost" onClick={exportJson}>
-          匯出備份
+          Export backup
         </Button>
         <Button variant="ghost" onClick={() => fileRef.current?.click()}>
-          匯入備份
+          Import backup
         </Button>
       </div>
       <input
@@ -77,16 +77,16 @@ export function DataSection() {
 
       {!confirmClear ? (
         <Button variant="danger" onClick={() => setConfirmClear(true)}>
-          清除全部資料
+          Erase all data
         </Button>
       ) : (
         <div className="flex flex-col gap-2.5 rounded-2xl border border-rose-500/25 bg-rose-500/5 p-4">
           <p className="text-sm font-semibold text-rose-400">
-            將刪除所有記錄與設定，且無法復原。建議先匯出備份。
+            This deletes all logs and settings and cannot be undone. Export a backup first.
           </p>
           <div className="grid grid-cols-2 gap-2.5">
             <Button variant="ghost" onClick={() => setConfirmClear(false)}>
-              取消
+              Cancel
             </Button>
             <Button
               variant="danger"
@@ -94,10 +94,10 @@ export function DataSection() {
                 clearLogs();
                 resetAll();
                 setConfirmClear(false);
-                setMessage("已清除全部資料");
+                setMessage("All data erased");
               }}
             >
-              確認清除
+              Erase everything
             </Button>
           </div>
         </div>

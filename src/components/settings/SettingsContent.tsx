@@ -31,7 +31,7 @@ export function SettingsContent() {
   if (!hydrated) {
     return (
       <div className="flex flex-1 items-center justify-center text-sm text-ink-3">
-        載入中…
+        Loading…
       </div>
     );
   }
@@ -40,36 +40,36 @@ export function SettingsContent() {
     <PageTransition className="flex flex-col gap-4">
       <header>
         <h1 className="font-display text-2xl font-bold tracking-tight">
-          設定
+          Settings
         </h1>
       </header>
 
-      <Section title="每日目標">
+      <Section title="Daily Goal">
         <GoalSetting />
       </Section>
 
-      <Section title="單位">
+      <Section title="Units">
         <UnitSetting />
       </Section>
 
-      <Section title="飲品類型">
+      <Section title="Drinks">
         <DrinkTypeManager />
       </Section>
 
-      <Section title="提醒">
+      <Section title="Reminders">
         <ReminderSetting />
       </Section>
 
-      <Section title="外觀">
+      <Section title="Appearance">
         <ThemeToggle />
       </Section>
 
-      <Section title="資料">
+      <Section title="Data">
         <DataSection />
       </Section>
 
       <p className="pb-2 text-center text-xs text-ink-3">
-        WaterMinder · 資料儲存在此裝置（IndexedDB）
+        WaterMinder · Data is stored on this device (IndexedDB)
       </p>
     </PageTransition>
   );

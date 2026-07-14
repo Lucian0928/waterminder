@@ -35,7 +35,7 @@ export function HomeContent() {
     const log = addLog(drink, volumeMl);
     lastLogId.current = log.id;
     if (toastTimer.current) clearTimeout(toastTimer.current);
-    setToast({ id: log.id, message: `已記錄 ${volumeMl} ml` });
+    setToast({ id: log.id, message: `Logged ${volumeMl} ml` });
     toastTimer.current = setTimeout(() => setToast(null), 2000);
   };
 
@@ -51,7 +51,7 @@ export function HomeContent() {
   if (!hydrated) {
     return (
       <div className="flex flex-1 items-center justify-center text-sm text-ink-3">
-        載入中…
+        Loading…
       </div>
     );
   }

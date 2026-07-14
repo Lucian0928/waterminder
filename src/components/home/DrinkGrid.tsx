@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { DrinkIcon } from "@/components/ui/DrinkIcon";
 import type { DrinkType } from "@/types";
 
 /** hex 色 + 透明度 → 卡片粉彩底 */
@@ -34,9 +35,7 @@ export function DrinkGrid({
         >
           <div className="flex items-start justify-between">
             <span className="text-sm font-semibold text-ink-2">{d.name}</span>
-            <span className="text-xl leading-none" aria-hidden>
-              {d.icon}
-            </span>
+            <DrinkIcon icon={d.icon} className="h-6 w-6" style={{ color: d.color }} />
           </div>
           <span
             className="font-num text-xl font-bold"

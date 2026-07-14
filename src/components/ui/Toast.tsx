@@ -36,7 +36,7 @@ export function Toast({
                 onClick={onUndo}
                 className="rounded-full bg-accent/15 px-3.5 py-1.5 text-sm font-bold text-accent transition-colors hover:bg-accent/25"
               >
-                {toast.undoLabel ?? "復原"}
+                {toast.undoLabel ?? "Undo"}
               </button>
             )}
           </motion.div>

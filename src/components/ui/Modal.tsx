@@ -49,7 +49,7 @@ export function Modal({
               <h2 className="font-display text-lg font-bold">{title}</h2>
               <button
                 onClick={onClose}
-                aria-label="關閉"
+                aria-label="Close"
                 className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-2 text-ink-2 transition-colors hover:text-ink"
               >
                 <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">

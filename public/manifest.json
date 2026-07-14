@@ -1,14 +1,14 @@
 {
-  "name": "WaterMinder — 喝水提醒與追蹤",
+  "name": "WaterMinder — Water Reminder & Tracker",
   "short_name": "WaterMinder",
-  "description": "記錄快、回饋爽的每日喝水追蹤",
-  "lang": "zh-TW",
+  "description": "Fast, satisfying daily water tracking",
+  "lang": "en",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#141a22",
-  "theme_color": "#141a22",
+  "background_color": "#EEF4FB",
+  "theme_color": "#EEF4FB",
   "icons": [
     {
       "src": "/icons/icon-192.png",

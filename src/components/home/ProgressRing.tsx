@@ -23,7 +23,7 @@ export function ProgressRing({
       className="relative mx-auto"
       style={{ width: SIZE, height: SIZE }}
       role="img"
-      aria-label={`今日已喝 ${Math.round(currentMl)} ml，目標 ${goalMl} ml，達成 ${Math.round(pct * 100)}%`}
+      aria-label={`${Math.round(currentMl)} ml today, goal ${goalMl} ml, ${Math.round(pct * 100)}% done`}
     >
       <svg
         width={SIZE}

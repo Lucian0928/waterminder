@@ -4,23 +4,35 @@ import { useState } from "react";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
+import { DrinkIcon, DRINK_ICON_KEYS } from "@/components/ui/DrinkIcon";
 import { newId } from "@/lib/defaults";
 import type { DrinkType } from "@/types";
 
-const ICON_CHOICES = ["💧", "🫧", "🍵", "☕", "🧃", "🥛", "🥤", "🍺", "🍶", "🧋", "🥥", "🍋"];
 const COLOR_CHOICES = [
-  "#2fb9f7",
-  "#38bdf8",
-  "#67e8f9",
-  "#a78bfa",
-  "#a3e635",
-  "#f59e0b",
-  "#fb7185",
-  "#e2e8f0",
+  "#3B82F6",
+  "#60A5FA",
+  "#0EA5E9",
+  "#06B6D4",
+  "#14B8A6",
+  "#22C55E",
+  "#84CC16",
+  "#EAB308",
+  "#F59E0B",
+  "#F97316",
+  "#EF4444",
+  "#F43F5E",
+  "#EC4899",
+  "#A855F7",
+  "#8B5CF6",
+  "#6366F1",
+  "#92400E",
+  "#78716C",
+  "#94A3B8",
+  "#334155",
 ];
 
 interface Draft {
-  id: string | null; // null = 新增
+  id: string | null; // null = new
   name: string;
   volume: string;
   icon: string;
@@ -33,8 +45,8 @@ const EMPTY_DRAFT: Draft = {
   id: null,
   name: "",
   volume: "300",
-  icon: "💧",
-  color: "#2fb9f7",
+  icon: "water",
+  color: "#3B82F6",
   hydration: 100,
   isBuiltIn: false,
 };
@@ -63,7 +75,7 @@ export function DrinkTypeManager() {
     const volume = Math.max(10, Math.round(Number(draft.volume) || 0));
     const type: DrinkType = {
       id: draft.id ?? newId(),
-      name: draft.name.trim() || "未命名",
+      name: draft.name.trim() || "Untitled",
       defaultVolumeMl: volume,
       icon: draft.icon,
       color: draft.color,
@@ -85,15 +97,15 @@ export function DrinkTypeManager() {
               className="flex w-full items-center gap-3 rounded-2xl border border-line bg-surface-2/60 px-3.5 py-3 text-left transition-colors hover:border-accent/40"
             >
               <span
-                className="flex h-10 w-10 items-center justify-center rounded-xl text-lg"
+                className="flex h-10 w-10 items-center justify-center rounded-xl"
                 style={{ backgroundColor: `${t.color}1f` }}
               >
-                {t.icon}
+                <DrinkIcon icon={t.icon} className="h-5 w-5" style={{ color: t.color }} />
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block font-semibold text-ink">{t.name}</span>
                 <span className="font-num block text-xs text-ink-3">
-                  {t.defaultVolumeMl} ml · 水合 {Math.round(t.hydrationFactor * 100)}%
+                  {t.defaultVolumeMl} ml · hydration {Math.round(t.hydrationFactor * 100)}%
                 </span>
               </span>
               <span className="text-ink-3">›</span>
@@ -103,23 +115,23 @@ export function DrinkTypeManager() {
       </ul>
 
       <Button variant="ghost" onClick={() => setDraft(EMPTY_DRAFT)}>
-        ＋ 新增杯型
+        ＋ Add Drink
       </Button>
 
       <Modal
         open={draft !== null}
         onClose={() => setDraft(null)}
-        title={draft?.id ? "編輯杯型" : "新增杯型"}
+        title={draft?.id ? "Edit Drink" : "New Drink"}
       >
         {draft && (
           <div className="flex flex-col gap-5">
             <label className="flex flex-col gap-1.5">
-              <span className="text-xs font-semibold text-ink-3">名稱</span>
+              <span className="text-xs font-semibold text-ink-3">Name</span>
               <input
                 type="text"
                 value={draft.name}
-                maxLength={12}
-                placeholder="例如：運動水壺"
+                maxLength={20}
+                placeholder="e.g. Sports Bottle"
                 onChange={(e) => setDraft({ ...draft, name: e.target.value })}
                 className="rounded-xl border border-line bg-surface-2 px-3 py-2.5 text-sm font-semibold text-ink"
               />
@@ -127,7 +139,7 @@ export function DrinkTypeManager() {
 
             <label className="flex flex-col gap-1.5">
               <span className="text-xs font-semibold text-ink-3">
-                預設容量（ml）
+                Default volume (ml)
               </span>
               <input
                 type="number"
@@ -141,35 +153,39 @@ export function DrinkTypeManager() {
             </label>
 
             <div>
-              <span className="text-xs font-semibold text-ink-3">圖示</span>
+              <span className="text-xs font-semibold text-ink-3">Icon</span>
               <div className="mt-2 grid grid-cols-6 gap-2">
-                {ICON_CHOICES.map((icon) => (
+                {DRINK_ICON_KEYS.map((icon) => (
                   <button
                     key={icon}
                     onClick={() => setDraft({ ...draft, icon })}
+                    aria-label={icon}
                     aria-pressed={draft.icon === icon}
-                    className={`flex h-11 items-center justify-center rounded-xl border text-xl transition-all ${
+                    className={`flex h-11 items-center justify-center rounded-xl border transition-all ${
                       draft.icon === icon
                         ? "border-accent bg-accent/10"
                         : "border-line bg-surface-2"
                     }`}
+                    style={{
+                      color: draft.icon === icon ? draft.color : "rgb(var(--c-ink-2))",
+                    }}
                   >
-                    {icon}
+                    <DrinkIcon icon={icon} className="h-5 w-5" />
                   </button>
                 ))}
               </div>
             </div>
 
             <div>
-              <span className="text-xs font-semibold text-ink-3">顏色</span>
-              <div className="mt-2 flex flex-wrap gap-2.5">
+              <span className="text-xs font-semibold text-ink-3">Color</span>
+              <div className="mt-2 grid grid-cols-8 gap-2.5">
                 {COLOR_CHOICES.map((color) => (
                   <button
                     key={color}
                     onClick={() => setDraft({ ...draft, color })}
-                    aria-label={`顏色 ${color}`}
+                    aria-label={`Color ${color}`}
                     aria-pressed={draft.color === color}
-                    className={`h-9 w-9 rounded-full transition-transform ${
+                    className={`h-8 w-8 rounded-full transition-transform ${
                       draft.color === color
                         ? "scale-110 ring-2 ring-ink ring-offset-2 ring-offset-surface"
                         : ""
@@ -183,7 +199,7 @@ export function DrinkTypeManager() {
             <div>
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-ink-3">
-                  水合係數
+                  Hydration factor
                 </span>
                 <span className="font-num text-sm font-bold text-accent">
                   {draft.hydration}%
@@ -199,10 +215,11 @@ export function DrinkTypeManager() {
                   setDraft({ ...draft, hydration: Number(e.target.value) })
                 }
                 className="mt-2 w-full accent-[rgb(var(--c-accent))]"
-                aria-label="水合係數（%）"
+                aria-label="Hydration factor (%)"
               />
               <p className="mt-1.5 text-xs text-ink-3">
-                實際計入的水量 = 容量 × 水合係數（咖啡、含糖飲料通常低於 100%）
+                Counted water = volume × hydration factor (coffee and sugary
+                drinks are usually below 100%).
               </p>
             </div>
 
@@ -215,11 +232,11 @@ export function DrinkTypeManager() {
                     setDraft(null);
                   }}
                 >
-                  刪除
+                  Delete
                 </Button>
               )}
               <Button className="flex-1" onClick={save}>
-                儲存
+                Save
               </Button>
             </div>
           </div>

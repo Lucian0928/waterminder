@@ -28,7 +28,7 @@ export function GoalSetting() {
   return (
     <div className="flex flex-col gap-4">
       <label className="flex items-center justify-between gap-4">
-        <span className="text-sm font-semibold text-ink-2">每日目標（ml）</span>
+        <span className="text-sm font-semibold text-ink-2">Daily goal (ml)</span>
         <input
           type="number"
           inputMode="numeric"
@@ -47,16 +47,16 @@ export function GoalSetting() {
       </label>
 
       <div className="rounded-2xl border border-line bg-surface-2/60 p-4">
-        <p className="text-sm font-semibold text-ink-2">依體重試算</p>
+        <p className="text-sm font-semibold text-ink-2">Estimate from body weight</p>
         <div className="mt-3 flex items-center gap-2.5">
           <input
             type="number"
             inputMode="decimal"
             min={1}
-            placeholder="體重"
+            placeholder="Weight"
             value={weight}
             onChange={(e) => setWeight(e.target.value)}
-            aria-label={`體重（${weightUnit}）`}
+            aria-label={`Weight (${weightUnit})`}
             className="font-num w-24 rounded-xl border border-line bg-surface px-3 py-2 text-right text-base font-bold text-ink"
           />
           <SegmentedControl<WeightUnit>
@@ -72,7 +72,7 @@ export function GoalSetting() {
         {suggested !== null && (
           <div className="mt-3 flex items-center justify-between gap-3">
             <p className="text-sm text-ink-2">
-              建議每日{" "}
+              Suggested daily intake{" "}
               <span className="font-num font-bold text-accent">
                 {formatVolume(suggested, settings.volumeUnit)}
               </span>
@@ -88,12 +88,12 @@ export function GoalSetting() {
                 })
               }
             >
-              套用
+              Apply
             </Button>
           </div>
         )}
         <p className="mt-2 text-xs text-ink-3">
-          公式：kg × 33 ml；lb × 0.5 oz。僅供參考，依活動量調整。
+          Formula: kg × 33 ml; lb × 0.5 oz. A reference only — adjust for activity level.
         </p>
       </div>
     </div>

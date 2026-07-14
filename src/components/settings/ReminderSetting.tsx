@@ -41,17 +41,17 @@ export function ReminderSetting() {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-semibold text-ink">定時提醒</p>
+          <p className="text-sm font-semibold text-ink">Scheduled reminders</p>
           <p className="mt-0.5 text-xs text-ink-3">
             {permission === "denied"
-              ? "通知權限已被封鎖，請在瀏覽器設定中允許"
-              : "在清醒時段內按間隔提醒喝水"}
+              ? "Notifications are blocked — allow them in your browser settings"
+              : "Remind you to drink at set intervals while awake"}
           </p>
         </div>
         <button
           role="switch"
           aria-checked={reminder.enabled}
-          aria-label="啟用提醒"
+          aria-label="Enable reminders"
           onClick={handleToggle}
           className={`relative h-8 w-14 shrink-0 rounded-full transition-colors ${
             reminder.enabled ? "bg-accent" : "bg-surface-2 border border-line"
@@ -69,7 +69,7 @@ export function ReminderSetting() {
         <div className="flex flex-col gap-4 rounded-2xl border border-line bg-surface-2/60 p-4">
           <div className="grid grid-cols-2 gap-3">
             <label className="flex flex-col gap-1.5">
-              <span className="text-xs font-semibold text-ink-3">起床時間</span>
+              <span className="text-xs font-semibold text-ink-3">Wake time</span>
               <input
                 type="time"
                 value={reminder.wakeTime}
@@ -80,7 +80,7 @@ export function ReminderSetting() {
               />
             </label>
             <label className="flex flex-col gap-1.5">
-              <span className="text-xs font-semibold text-ink-3">睡前時間</span>
+              <span className="text-xs font-semibold text-ink-3">Bedtime</span>
               <input
                 type="time"
                 value={reminder.sleepTime}
@@ -93,18 +93,18 @@ export function ReminderSetting() {
           </div>
           {invalidRange && (
             <p className="text-xs font-semibold text-rose-400">
-              睡前時間需晚於起床時間，目前設定不會發出提醒。
+              Bedtime must be later than wake time — no reminders will fire with the current setting.
             </p>
           )}
           <div>
-            <span className="text-xs font-semibold text-ink-3">提醒間隔</span>
+            <span className="text-xs font-semibold text-ink-3">Interval</span>
             <SegmentedControl<ReminderInterval>
               className="mt-1.5"
               options={[
-                { value: 30, label: "30 分" },
-                { value: 60, label: "60 分" },
-                { value: 90, label: "90 分" },
-                { value: 120, label: "120 分" },
+                { value: 30, label: "30 min" },
+                { value: 60, label: "60 min" },
+                { value: 90, label: "90 min" },
+                { value: 120, label: "120 min" },
               ]}
               value={reminder.intervalMinutes}
               onChange={(v) => setReminder({ ...reminder, intervalMinutes: v })}
@@ -113,14 +113,13 @@ export function ReminderSetting() {
           <Button
             variant="ghost"
             onClick={() =>
-              showNotification("測試通知 💧", "通知運作正常，就這種感覺。")
+              showNotification("Test notification 💧", "Notifications are working — this is what they feel like.")
             }
           >
-            發送測試通知
+            Send test notification
           </Button>
           <p className="text-xs leading-relaxed text-ink-3">
-            提醒在 App
-            開啟（含加到主畫面後於前景）時最可靠；瀏覽器分頁完全關閉後，部分平台無法在背景觸發本機通知。
+            Reminders are most reliable while the app is open (including foreground after Add to Home Screen); some platforms can't fire local notifications once the tab is fully closed.
           </p>
         </div>
       )}

@@ -30,7 +30,7 @@ function useReminderScheduler() {
       if (at === null) return;
       const delay = Math.max(1000, at - Date.now());
       timer.current = setTimeout(async () => {
-        await showNotification("該喝水囉 💧", "補充一杯水，保持今天的節奏。");
+        await showNotification("Time to hydrate 💧", "Have a glass of water and keep your pace today.");
         schedule();
       }, delay);
     };

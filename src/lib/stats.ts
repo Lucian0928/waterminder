@@ -93,7 +93,7 @@ export function weekSeries(
 ): SeriesPoint[] {
   const start = startOfWeekKey(anchorKey);
   const today = todayKey();
-  const labels = ["一", "二", "三", "四", "五", "六", "日"];
+  const labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   return labels.map((label, i) => {
     const key = addDays(start, i);
     return {

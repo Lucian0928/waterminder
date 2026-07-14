@@ -1,8 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
+import { DrinkIcon } from "@/components/ui/DrinkIcon";
+import { mergeWithCatalog } from "@/lib/defaults";
 import type { DrinkType } from "@/types";
 
 const KEYPAD_KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "00", "0", "⌫"];
@@ -60,8 +62,9 @@ export function OtherDrinksSheet({
   drinkTypes: DrinkType[];
   onAdd: (drink: DrinkType, volumeMl: number) => void;
 }) {
+  const allDrinks = useMemo(() => mergeWithCatalog(drinkTypes), [drinkTypes]);
   const [amount, setAmount] = useState("0");
-  const [selectedId, setSelectedId] = useState(drinkTypes[0]?.id ?? "water");
+  const [selectedId, setSelectedId] = useState(allDrinks[0]?.id ?? "water");
   const [now, setNow] = useState(() => new Date());
   const [mounted, setMounted] = useState(false);
 
@@ -86,7 +89,7 @@ export function OtherDrinksSheet({
     });
   }, []);
 
-  const selected = drinkTypes.find((d) => d.id === selectedId) ?? drinkTypes[0];
+  const selected = allDrinks.find((d) => d.id === selectedId) ?? allDrinks[0];
   const ml = parseInt(amount, 10) || 0;
 
   const dateStr = now.toLocaleDateString("en-US", {
@@ -120,7 +123,7 @@ export function OtherDrinksSheet({
               <span className="text-base font-semibold text-ink">Other Drinks</span>
               <button
                 onClick={onClose}
-                aria-label="關閉"
+                aria-label="Close"
                 className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-2 text-ink-2"
               >
                 <XIcon />
@@ -137,10 +140,10 @@ export function OtherDrinksSheet({
               </span>
             </div>
 
-            {/* Drink type pills */}
+            {/* Drink type pills：雙列橫向捲動，容納完整目錄 */}
             <div className="no-scrollbar shrink-0 overflow-x-auto px-4 pb-2">
-              <div className="flex w-max gap-2">
-                {drinkTypes.map((d) => {
+              <div className="grid w-max grid-flow-col grid-rows-2 gap-2">
+                {allDrinks.map((d) => {
                   const active = d.id === selectedId;
                   return (
                     <button
@@ -156,7 +159,11 @@ export function OtherDrinksSheet({
                         boxShadow: active ? "0 2px 8px rgba(59,130,246,0.15)" : "none",
                       }}
                     >
-                      <span aria-hidden>{d.icon}</span>
+                      <DrinkIcon
+                        icon={d.icon}
+                        className="h-4 w-4"
+                        style={{ color: active ? "rgb(var(--c-accent))" : d.color }}
+                      />
                       <span>{d.name}</span>
                     </button>
                   );
@@ -184,7 +191,7 @@ export function OtherDrinksSheet({
                     key={k}
                     whileTap={{ scale: 0.93 }}
                     onClick={() => handleKey(k)}
-                    aria-label={k === "⌫" ? "刪除" : k}
+                    aria-label={k === "⌫" ? "Delete" : k}
                     className="font-num flex h-12 items-center justify-center rounded-xl bg-surface text-lg font-semibold text-ink"
                     style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.07)" }}
                   >

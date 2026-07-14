@@ -12,8 +12,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "WaterMinder — 喝水提醒與追蹤",
-  description: "記錄快、回饋爽的每日喝水追蹤 App",
+  title: "WaterMinder — Water Reminder & Tracker",
+  description: "Fast, satisfying daily water tracking",
   manifest: "/manifest.json",
   icons: {
     icon: "/icons/icon-192.png",
@@ -38,7 +38,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="zh-TW" data-theme="light" suppressHydrationWarning>
+    <html lang="en" data-theme="light" suppressHydrationWarning>
       <body
         className={`${inter.variable} font-body`}
         style={{ ["--font-display" as string]: "var(--font-body)" }}

@@ -53,9 +53,9 @@ function SettingsIcon() {
 }
 
 const TABS = [
-  { href: "/", label: "今日", Icon: DrippingIcon },
-  { href: "/history", label: "歷史", Icon: StatisticsIcon },
-  { href: "/settings", label: "設定", Icon: SettingsIcon },
+  { href: "/", label: "Today", Icon: DrippingIcon },
+  { href: "/history", label: "History", Icon: StatisticsIcon },
+  { href: "/settings", label: "Settings", Icon: SettingsIcon },
 ];
 
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
@@ -107,7 +107,7 @@ export function TabBar() {
   return (
     <nav
       className="fixed inset-x-0 bottom-0 z-50 flex justify-center px-6 pb-[max(1rem,env(safe-area-inset-bottom))]"
-      aria-label="主導覽"
+      aria-label="Main navigation"
     >
       <div
         className="glass-pill relative flex items-center rounded-full"

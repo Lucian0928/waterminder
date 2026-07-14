@@ -46,7 +46,7 @@ export function formatTime(ts: number): string {
   ).padStart(2, "0")}`;
 }
 
-const WEEKDAYS = ["一", "二", "三", "四", "五", "六", "日"];
+const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 /** 週檢視 X 軸標籤（週一起算） */
 export function weekdayLabel(index: number): string {
@@ -55,7 +55,7 @@ export function weekdayLabel(index: number): string {
 
 export function formatMonthTitle(key: string): string {
   const d = dateFromKey(key);
-  return `${d.getFullYear()} 年 ${d.getMonth() + 1} 月`;
+  return d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
 }
 
 export function formatWeekTitle(weekStartKey: string): string {

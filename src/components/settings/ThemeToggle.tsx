@@ -11,8 +11,8 @@ export function ThemeToggle() {
   return (
     <SegmentedControl<ThemeMode>
       options={[
-        { value: "dark", label: "深色" },
-        { value: "light", label: "淺色" },
+        { value: "dark", label: "Dark" },
+        { value: "light", label: "Light" },
       ]}
       value={theme}
       onChange={setTheme}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   Area,
   AreaChart,
@@ -15,6 +15,7 @@ import {
 } from "recharts";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { OtherDrinksSheet } from "@/components/home/OtherDrinksSheet";
+import { DrinkIcon } from "@/components/ui/DrinkIcon";
 import { useWaterStore } from "@/store/useWaterStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useHydrated } from "@/hooks/useHydrated";
@@ -326,10 +327,14 @@ function TodayLogs({ logs, goal }: { logs: DrinkLog[]; goal: number }) {
             className="flex items-center gap-3 rounded-2xl bg-surface px-4 py-3"
           >
             <div
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
               style={{ background: `${log.drinkColor}2b` }}
             >
-              {log.drinkIcon}
+              <DrinkIcon
+                icon={log.drinkIcon}
+                className="h-5 w-5"
+                style={{ color: log.drinkColor }}
+              />
             </div>
             <div className="min-w-0 flex-1">
               <div className="text-sm font-semibold text-ink">
@@ -368,9 +373,40 @@ export function HistoryContent() {
   const [tab, setTab] = useState<StatTab>("D");
   const [anchor, setAnchor] = useState(() => today);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [filterId, setFilterId] = useState<string | null>(null);
+  const [filterOpen, setFilterOpen] = useState(false);
 
   const goal = settings.goal.dailyTargetMl;
   const tabs: StatTab[] = ["D", "W", "M", "Y"];
+
+  /* 篩選選項：使用者杯型 + 記錄裡出現過但已不在清單的類型 */
+  const filterOptions = useMemo(() => {
+    const opts = drinkTypes.map((t) => ({
+      id: t.id,
+      name: t.name,
+      icon: t.icon,
+      color: t.color,
+    }));
+    const known = new Set(opts.map((o) => o.id));
+    for (const l of logs) {
+      if (!known.has(l.drinkTypeId)) {
+        known.add(l.drinkTypeId);
+        opts.push({
+          id: l.drinkTypeId,
+          name: l.drinkName,
+          icon: l.drinkIcon,
+          color: l.drinkColor || FALLBACK_COLOR,
+        });
+      }
+    }
+    return opts;
+  }, [drinkTypes, logs]);
+
+  const activeFilter = filterOptions.find((o) => o.id === filterId) ?? null;
+  const filteredLogs = useMemo(
+    () => (filterId ? logs.filter((l) => l.drinkTypeId === filterId) : logs),
+    [logs, filterId]
+  );
 
   const period = useMemo(() => {
     if (tab === "W") {
@@ -387,11 +423,14 @@ export function HistoryContent() {
     return { keys: [anchor], labels: [anchor] };
   }, [tab, anchor]);
 
-  const types = useMemo(() => typesInLogs(logs, drinkTypes), [logs, drinkTypes]);
+  const types = useMemo(
+    () => typesInLogs(filteredLogs, drinkTypes),
+    [filteredLogs, drinkTypes]
+  );
 
   const barData = useMemo(() => {
     if (tab === "W" || tab === "M") {
-      return stackRows(logs, period.keys, period.labels);
+      return stackRows(filteredLogs, period.keys, period.labels);
     }
     if (tab === "Y") {
       /* 每月一根：該月「平均每日」攝取，按飲品拆分堆疊 */
@@ -399,7 +438,7 @@ export function HistoryContent() {
       const monthLabels = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"];
       return Array.from({ length: 12 }, (_, m) => {
         const prefix = `${year}-${String(m + 1).padStart(2, "0")}`;
-        const monthLogs = logs.filter((l) => l.dateKey.startsWith(prefix));
+        const monthLogs = filteredLogs.filter((l) => l.dateKey.startsWith(prefix));
         const days = new Set(monthLogs.map((l) => l.dateKey)).size;
         const row: Record<string, string | number> = { label: monthLabels[m] };
         if (days > 0) {
@@ -416,34 +455,34 @@ export function HistoryContent() {
       });
     }
     return [];
-  }, [tab, anchor, logs, period]);
+  }, [tab, anchor, filteredLogs, period]);
 
   const metric = useMemo(() => {
     let inPeriod: DrinkLog[];
     if (tab === "D") {
-      inPeriod = logs.filter((l) => l.dateKey === anchor);
+      inPeriod = filteredLogs.filter((l) => l.dateKey === anchor);
     } else if (tab === "Y") {
       const year = anchor.slice(0, 4);
-      inPeriod = logs.filter((l) => l.dateKey.startsWith(year));
+      inPeriod = filteredLogs.filter((l) => l.dateKey.startsWith(year));
     } else {
       const keySet = new Set(period.keys);
-      inPeriod = logs.filter((l) => keySet.has(l.dateKey));
+      inPeriod = filteredLogs.filter((l) => keySet.has(l.dateKey));
     }
     const total = inPeriod.reduce((s, l) => s + l.effectiveMl, 0);
     if (tab === "D") return { label: "Total", value: Math.round(total) };
     const days = new Set(inPeriod.map((l) => l.dateKey)).size;
     return { label: "Average", value: days > 0 ? Math.round(total / days) : 0 };
-  }, [tab, anchor, logs, period]);
+  }, [tab, anchor, filteredLogs, period]);
 
   const todayLogs = useMemo(
-    () => logs.filter((l) => l.dateKey === today),
-    [logs, today]
+    () => filteredLogs.filter((l) => l.dateKey === today),
+    [filteredLogs, today]
   );
 
   if (!hydrated) {
     return (
       <div className="flex flex-1 items-center justify-center text-sm text-ink-3">
-        載入中…
+        Loading…
       </div>
     );
   }
@@ -469,17 +508,89 @@ export function HistoryContent() {
 
   return (
     <PageTransition className="flex flex-col gap-4">
-      {/* Header */}
-      <div className="flex items-center justify-between pt-4">
-        <button className="rounded-2xl bg-surface px-4 py-2 text-sm font-semibold text-accent">
-          All Drinks <span className="text-[10px]">▼</span>
-        </button>
+      {/* Header：三欄 grid 讓標題永遠置中，不受左右寬度影響 */}
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center pt-4">
+        <div className="relative justify-self-start">
+          <button
+            onClick={() => setFilterOpen((v) => !v)}
+            aria-expanded={filterOpen}
+            className="flex items-center gap-1.5 rounded-2xl bg-surface px-4 py-2 text-sm font-semibold text-accent"
+          >
+            {activeFilter && (
+              <DrinkIcon
+                icon={activeFilter.icon}
+                className="h-4 w-4"
+                style={{ color: activeFilter.color }}
+              />
+            )}
+            {activeFilter?.name ?? "All Drinks"}{" "}
+            <span className="text-[10px]">▼</span>
+          </button>
+
+          <AnimatePresence>
+            {filterOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-30"
+                  onClick={() => setFilterOpen(false)}
+                />
+                <motion.div
+                  initial={{ opacity: 0, y: -6, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -6, scale: 0.96 }}
+                  transition={{ duration: 0.16, ease: "easeOut" }}
+                  className="absolute left-0 top-full z-40 mt-2 max-h-72 w-52 overflow-y-auto rounded-2xl bg-surface p-1.5"
+                  style={{ boxShadow: "0 8px 30px rgba(0,0,0,0.14)" }}
+                >
+                  <button
+                    onClick={() => {
+                      setFilterId(null);
+                      setFilterOpen(false);
+                    }}
+                    className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold ${
+                      filterId === null ? "bg-bg text-accent" : "text-ink-2"
+                    }`}
+                  >
+                    <span className="flex h-5 w-5 items-center justify-center">
+                      <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden>
+                        <circle cx="12" cy="12" r="8.5" stroke="currentColor" strokeWidth="1.8" />
+                        <path d="M8 12.5l2.5 2.5L16 9.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </span>
+                    All Drinks
+                  </button>
+                  {filterOptions.map((o) => (
+                    <button
+                      key={o.id}
+                      onClick={() => {
+                        setFilterId(o.id);
+                        setFilterOpen(false);
+                      }}
+                      className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold ${
+                        filterId === o.id ? "bg-bg text-accent" : "text-ink-2"
+                      }`}
+                    >
+                      <DrinkIcon
+                        icon={o.icon}
+                        className="h-5 w-5"
+                        style={{ color: o.color }}
+                      />
+                      {o.name}
+                    </button>
+                  ))}
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
+        </div>
+
         <span className="text-lg font-bold text-ink">History</span>
+
         <motion.button
           whileTap={{ scale: 0.93 }}
           onClick={() => setSheetOpen(true)}
-          aria-label="新增記錄"
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-accent text-white"
+          aria-label="Add log"
+          className="flex h-10 w-10 items-center justify-center justify-self-end rounded-full bg-accent text-white"
         >
           <PlusIcon />
         </motion.button>
@@ -514,7 +625,7 @@ export function HistoryContent() {
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={() => shift(-1)}
-            aria-label="上一期"
+            aria-label="Previous period"
             className="flex h-8 w-8 items-center justify-center rounded-full bg-bg text-accent"
           >
             <ChevronLeft />
@@ -526,7 +637,7 @@ export function HistoryContent() {
             whileTap={{ scale: 0.9 }}
             onClick={() => shift(1)}
             disabled={atCurrent}
-            aria-label="下一期"
+            aria-label="Next period"
             className="flex h-8 w-8 items-center justify-center rounded-full bg-bg text-accent disabled:text-ink-3"
           >
             <ChevronRight />
@@ -541,7 +652,7 @@ export function HistoryContent() {
         </div>
 
         {tab === "D" ? (
-          <DayChart logs={logs} dayKey={anchor} goal={goal} />
+          <DayChart logs={filteredLogs} dayKey={anchor} goal={goal} />
         ) : (
           <StackedChart
             data={barData}
