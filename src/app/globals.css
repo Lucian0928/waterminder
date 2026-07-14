@@ -3,24 +3,25 @@
 @tailwind utilities;
 
 :root {
-  /* 深色（預設）：深藍黑 + 青綠光 */
-  --c-bg: 7 11 20; /* #070b14 */
-  --c-surface: 15 21 37; /* #0f1525 */
-  --c-surface-2: 20 28 50; /* #141c32 */
-  --c-ink: 232 238 247; /* #e8eef7 */
-  --c-ink-2: 148 161 184; /* #94a1b8 */
-  --c-ink-3: 94 106 130; /* #5e6a82 */
-  --c-accent: 0 212 184; /* #00d4b8 */
-  --c-accent-deep: 8 145 178; /* #0891b2 */
+  /* 深色（預設）：深藍灰 + 水藍。材質語言以玻璃 Tab Bar 為基準：
+     真實光學陰影、灰階為底、藍色只給「作用中」與主要動作 */
+  --c-bg: 24 29 43; /* #181d2b */
+  --c-surface: 33 42 62; /* #212a3e */
+  --c-surface-2: 42 53 79; /* #2a354f */
+  --c-ink: 238 242 248; /* #eef2f8 */
+  --c-ink-2: 154 167 189; /* #9aa7bd */
+  --c-ink-3: 104 117 142; /* #68758e */
+  --c-accent: 77 148 255; /* #4d94ff（深底上的可讀藍） */
+  --c-accent-deep: 28 110 247; /* #1c6ef7（品牌藍，同 Tab Bar） */
   --c-cool: 124 140 255; /* #7c8cff */
-  --c-line: 34 45 72; /* #222d48 */
+  --c-line: 52 63 94; /* #343f5e */
 
-  --card-glow: 0 0 20px rgba(0, 212, 184, 0.12), 0 0 44px rgba(0, 212, 184, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  --card-sheen: radial-gradient(
-    circle at top left,
-    rgba(255, 255, 255, 0.08),
-    transparent 60%
+  --card-glow: 0 4px 24px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  --card-sheen: linear-gradient(
+    178deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    transparent 36%
   );
   --tab-glass-bg: rgba(120, 120, 128, 0.28);
   --tab-glass-border: rgba(255, 255, 255, 0.22);
@@ -34,24 +35,20 @@
 }
 
 [data-theme="light"] {
-  --c-bg: 240 246 250; /* #f0f6fa */
+  --c-bg: 238 242 247; /* #eef2f7 */
   --c-surface: 255 255 255;
-  --c-surface-2: 240 246 252;
-  --c-ink: 14 26 42; /* #0e1a2a */
-  --c-ink-2: 74 90 114;
-  --c-ink-3: 128 142 166;
-  --c-accent: 0 168 148; /* 淺色底下加深一階保持對比 */
-  --c-accent-deep: 8 122 150;
+  --c-surface-2: 241 244 250;
+  --c-ink: 22 32 46; /* #16202e */
+  --c-ink-2: 90 104 128;
+  --c-ink-3: 138 150 172;
+  --c-accent: 28 110 247; /* #1c6ef7 */
+  --c-accent-deep: 11 82 205; /* #0b52cd */
   --c-cool: 92 108 232;
-  --c-line: 216 227 238;
+  --c-line: 219 227 238;
 
-  --card-glow: 0 6px 24px rgba(15, 45, 60, 0.08), 0 1px 2px rgba(15, 45, 60, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
-  --card-sheen: radial-gradient(
-    circle at top left,
-    rgba(255, 255, 255, 0.9),
-    transparent 60%
-  );
+  --card-glow: 0 4px 20px rgba(23, 43, 77, 0.08), 0 1px 2px rgba(23, 43, 77, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+  --card-sheen: none;
   --tab-glass-bg: rgba(200, 206, 218, 0.32);
   --tab-glass-border: rgba(14, 26, 42, 0.14);
   --tab-glass-shadow: 0 6px 24px rgba(15, 45, 60, 0.12),
@@ -70,6 +67,9 @@ html {
 body {
   min-height: 100%;
   background-color: rgb(var(--c-bg));
+  /* 同 Figma Make demo 的斜向深藍灰漸層 */
+  background-image: linear-gradient(160deg, #181d2b 0%, #232a3e 50%, #1a2030 100%);
+  background-attachment: fixed;
   color: rgb(var(--c-ink));
   font-family: var(--font-body), "PingFang TC", "Noto Sans TC", system-ui,
     sans-serif;
@@ -78,38 +78,30 @@ body {
   overscroll-behavior-y: none;
 }
 
-/* 深色底的環境光：畫面上緣一抹青綠氛圍 */
+[data-theme="light"] body {
+  background-image: linear-gradient(160deg, #f2f5fa 0%, #e9eef6 50%, #eef2f7 100%);
+}
+
+/* 上緣一抹很淡的水藍環境光 */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  background:
-    radial-gradient(
-      60% 38% at 50% -6%,
-      rgba(0, 212, 184, 0.14),
-      transparent 70%
-    ),
-    radial-gradient(
-      42% 30% at 88% 12%,
-      rgba(124, 140, 255, 0.1),
-      transparent 70%
-    );
+  background: radial-gradient(
+    60% 40% at 50% -10%,
+    rgba(76, 131, 255, 0.12),
+    transparent 70%
+  );
 }
 
 [data-theme="light"] body::before {
-  background:
-    radial-gradient(
-      60% 38% at 50% -6%,
-      rgba(0, 168, 148, 0.1),
-      transparent 70%
-    ),
-    radial-gradient(
-      42% 30% at 88% 12%,
-      rgba(92, 108, 232, 0.07),
-      transparent 70%
-    );
+  background: radial-gradient(
+    60% 40% at 50% -10%,
+    rgba(28, 110, 247, 0.06),
+    transparent 70%
+  );
 }
 
 .font-num {
@@ -119,13 +111,13 @@ body::before {
   letter-spacing: -0.01em;
 }
 
-/* 玻璃擬態卡片：不透明深色底 + 多層光暈 + 左上光源 */
+/* 內容卡片：實心柔和表面 + 光學陰影 + 頂緣內光（呼應 Tab Bar 的 inset 高光） */
 .glow-card {
   position: relative;
   isolation: isolate;
   overflow: hidden;
   background-color: rgb(var(--c-surface));
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: 1.5rem;
   box-shadow: var(--card-glow);
 }
@@ -198,12 +190,12 @@ body::before {
 @keyframes ring-glow-pulse {
   0%,
   100% {
-    filter: drop-shadow(0 0 8px rgba(0, 212, 184, 0.55))
-      drop-shadow(0 0 22px rgba(0, 212, 184, 0.3));
+    filter: drop-shadow(0 0 8px rgba(56, 132, 255, 0.5))
+      drop-shadow(0 0 22px rgba(28, 110, 247, 0.28));
   }
   50% {
-    filter: drop-shadow(0 0 14px rgba(0, 212, 184, 0.85))
-      drop-shadow(0 0 38px rgba(0, 212, 184, 0.45));
+    filter: drop-shadow(0 0 14px rgba(56, 132, 255, 0.75))
+      drop-shadow(0 0 38px rgba(28, 110, 247, 0.4));
   }
 }
 
@@ -218,7 +210,7 @@ body::before {
   }
   .ring-complete {
     animation: none;
-    filter: drop-shadow(0 0 10px rgba(0, 212, 184, 0.6));
+    filter: drop-shadow(0 0 10px rgba(56, 132, 255, 0.55));
   }
 }
 
@@ -228,6 +220,22 @@ body::before {
 }
 .no-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+/* 水平捲動列右緣淡出，暗示還有內容 */
+.chip-fade {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    black 0,
+    black calc(100% - 32px),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    black 0,
+    black calc(100% - 32px),
+    transparent 100%
+  );
 }
 
 /* 表單控制項的基本外觀 */

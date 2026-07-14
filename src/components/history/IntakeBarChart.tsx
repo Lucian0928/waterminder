@@ -15,8 +15,8 @@ import type { SeriesPoint } from "@/lib/stats";
 import type { VolumeUnit } from "@/types";
 import { formatVolume } from "@/lib/units";
 
-const MET = "#00d4b8";
-const NOT_MET = "#3a4a74";
+const MET = "#1c6ef7";
+const NOT_MET = "#39435f";
 const NOT_MET_LIGHT = "#b9c9dd";
 
 function ChartTooltip({

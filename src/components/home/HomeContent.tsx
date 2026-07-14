@@ -88,7 +88,11 @@ export function HomeContent() {
   return (
     <PageTransition className="flex flex-col gap-6">
       <header>
-        <p className="text-sm font-semibold text-ink-2">{greeting()} 👋</p>
+        <p className="text-sm font-semibold text-ink-2">
+          {`${new Date().getMonth() + 1}月${new Date().getDate()}日 週${
+            ["日", "一", "二", "三", "四", "五", "六"][new Date().getDay()]
+          } · ${greeting()}`}
+        </p>
         <h1 className="font-display mt-0.5 text-2xl font-bold tracking-tight">
           今日進度
         </h1>

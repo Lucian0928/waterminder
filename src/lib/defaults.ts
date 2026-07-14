@@ -6,7 +6,7 @@ export const DEFAULT_DRINK_TYPES: DrinkType[] = [
     name: "水",
     defaultVolumeMl: 350,
     icon: "💧",
-    color: "#00d4b8",
+    color: "#38bdf8",
     hydrationFactor: 1,
     isBuiltIn: true,
   },

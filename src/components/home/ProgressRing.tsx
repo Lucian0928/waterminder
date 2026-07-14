@@ -21,9 +21,9 @@ interface Stage {
 }
 
 function stageOf(pct: number): Stage {
-  if (pct < 0.3) return { from: "#7c8cff", to: "#a78bfa" }; // 藍紫
-  if (pct < 0.7) return { from: "#38bdf8", to: "#22d3ee" }; // 青色
-  return { from: "#00d4b8", to: "#5eead4" }; // 青綠
+  if (pct < 0.3) return { from: "#7c8cff", to: "#a5b4fc" }; // 冷藍紫（剛起步）
+  if (pct < 0.7) return { from: "#38bdf8", to: "#7dd3fc" }; // 天空藍（進行中）
+  return { from: "#1c6ef7", to: "#38bdf8" }; // 品牌藍（同 Tab Bar）
 }
 
 export function ProgressRing({
@@ -42,10 +42,11 @@ export function ProgressRing({
   const complete = pct >= 1;
   const stage = useMemo(() => stageOf(pct), [pct]);
 
-  // 內圈水位：pct=0 時在內圈底部，pct=1 淹過頂部
+  // 內圈水位：pct=0 時整個藏到內圈底下（避免露出一截波峰），pct=1 淹過頂部
   const top = C - INNER_R;
   const bottom = C + INNER_R;
-  const levelY = bottom - (bottom - top + 16) * clamped;
+  const levelY =
+    clamped === 0 ? bottom + 12 : bottom - (bottom - top + 16) * clamped;
 
   return (
     <div

@@ -1,5 +1,5 @@
 /* WaterMinder Service Worker：離線快取 + 通知 */
-const CACHE = "waterminder-v1";
+const CACHE = "waterminder-v2";
 const PRECACHE = ["/", "/history", "/settings", "/manifest.json"];
 
 self.addEventListener("install", (event) => {

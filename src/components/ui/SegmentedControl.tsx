@@ -23,7 +23,7 @@ export function SegmentedControl<T extends string | number>({
   return (
     <div
       role="tablist"
-      className={`flex rounded-full border border-line bg-surface-2 p-1 ${className}`}
+      className={`glass-pill flex rounded-full p-[3px] ${className}`}
     >
       {options.map((opt) => {
         const active = opt.value === value;
@@ -33,14 +33,14 @@ export function SegmentedControl<T extends string | number>({
             role="tab"
             aria-selected={active}
             onClick={() => onChange(opt.value)}
-            className={`relative flex-1 rounded-full px-3 py-1.5 text-sm font-semibold transition-colors duration-200 ${
-              active ? "text-bg" : "text-ink-2 hover:text-ink"
+            className={`relative flex-1 rounded-full px-3 py-1.5 text-sm transition-colors duration-200 ${
+              active ? "font-bold text-ink" : "font-semibold text-ink-2 hover:text-ink"
             }`}
           >
             {active && (
               <motion.span
                 layoutId={`segment-${groupId}`}
-                className="absolute inset-0 rounded-full bg-gradient-to-r from-accent to-accent-deep"
+                className="tab-bubble absolute inset-0"
                 transition={{ type: "spring", stiffness: 420, damping: 34 }}
               />
             )}

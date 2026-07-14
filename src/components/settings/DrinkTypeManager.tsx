@@ -9,9 +9,9 @@ import type { DrinkType } from "@/types";
 
 const ICON_CHOICES = ["💧", "🫧", "🍵", "☕", "🧃", "🥛", "🥤", "🍺", "🍶", "🧋", "🥥", "🍋"];
 const COLOR_CHOICES = [
-  "#00d4b8",
+  "#1c6ef7",
   "#38bdf8",
-  "#7c8cff",
+  "#67e8f9",
   "#a78bfa",
   "#a3e635",
   "#f59e0b",
@@ -34,7 +34,7 @@ const EMPTY_DRAFT: Draft = {
   name: "",
   volume: "300",
   icon: "💧",
-  color: "#00d4b8",
+  color: "#1c6ef7",
   hydration: 100,
   isBuiltIn: false,
 };

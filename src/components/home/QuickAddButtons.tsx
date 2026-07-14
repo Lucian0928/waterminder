@@ -29,7 +29,7 @@ export function QuickAddButtons({
   return (
     <div>
       {/* 飲品選擇列 */}
-      <div className="no-scrollbar -mx-5 flex gap-2 overflow-x-auto px-5 pb-1">
+      <div className="no-scrollbar chip-fade -mx-5 flex gap-2 overflow-x-auto px-5 pb-1">
         {drinkTypes.map((t) => {
           const active = t.id === selected?.id;
           return (
