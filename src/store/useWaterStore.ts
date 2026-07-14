@@ -11,7 +11,7 @@ interface WaterState {
   logs: DrinkLog[];
 
   hydrate: () => Promise<void>;
-  addLog: (drink: DrinkType, volumeMl: number) => DrinkLog;
+  addLog: (drink: DrinkType, volumeMl: number, timestamp?: number) => DrinkLog;
   removeLog: (id: string) => void;
   importLogs: (logs: DrinkLog[]) => void;
   clearLogs: () => void;
@@ -27,12 +27,12 @@ export const useWaterStore = create<WaterState>((set, get) => ({
     set({ hydrated: true, logs });
   },
 
-  addLog: (drink, volumeMl) => {
-    const now = Date.now();
+  addLog: (drink, volumeMl, timestamp) => {
+    const ts = timestamp ?? Date.now();
     const log: DrinkLog = {
       id: newId(),
-      timestamp: now,
-      dateKey: dateKeyOf(now),
+      timestamp: ts,
+      dateKey: dateKeyOf(ts),
       volumeMl,
       effectiveMl: Math.round(volumeMl * drink.hydrationFactor),
       drinkTypeId: drink.id,

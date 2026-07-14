@@ -42,8 +42,8 @@ export function HomeContent() {
   const currentMl = totals.get(today) ?? 0;
   const goalMl = settings.goal.dailyTargetMl;
 
-  const handleAdd = (drink: DrinkType, volumeMl: number) => {
-    const log = addLog(drink, volumeMl);
+  const handleAdd = (drink: DrinkType, volumeMl: number, timestamp?: number) => {
+    const log = addLog(drink, volumeMl, timestamp);
     lastLogId.current = log.id;
     if (toastTimer.current) clearTimeout(toastTimer.current);
     setToast({ id: log.id, message: `Logged ${volumeMl} ml` });

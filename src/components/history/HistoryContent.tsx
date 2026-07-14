@@ -673,7 +673,7 @@ export function HistoryContent() {
         open={sheetOpen}
         onClose={() => setSheetOpen(false)}
         drinkTypes={drinkTypes}
-        onAdd={(d, ml) => addLog(d, ml)}
+        onAdd={(d, ml, ts) => addLog(d, ml, ts)}
       />
     </PageTransition>
   );

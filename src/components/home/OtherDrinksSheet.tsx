@@ -60,7 +60,7 @@ export function OtherDrinksSheet({
   open: boolean;
   onClose: () => void;
   drinkTypes: DrinkType[];
-  onAdd: (drink: DrinkType, volumeMl: number) => void;
+  onAdd: (drink: DrinkType, volumeMl: number, timestamp: number) => void;
 }) {
   const allDrinks = useMemo(
     () => mergeWithCatalog(drinkTypes).filter((d) => d.active),
@@ -68,16 +68,18 @@ export function OtherDrinksSheet({
   );
   const [amount, setAmount] = useState("0");
   const [selectedId, setSelectedId] = useState(allDrinks[0]?.id ?? "water");
-  const [now, setNow] = useState(() => new Date());
+  const [when, setWhen] = useState(() => new Date());
+  const [whenEdited, setWhenEdited] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => setMounted(true), []);
 
+  /* 每次開啟重置金額與時間（預設為現在，除非使用者手動調整） */
   useEffect(() => {
     if (!open) return;
     setAmount("0");
-    const t = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(t);
+    setWhen(new Date());
+    setWhenEdited(false);
   }, [open]);
 
   const handleKey = useCallback((k: string) => {
@@ -95,16 +97,26 @@ export function OtherDrinksSheet({
   const selected = allDrinks.find((d) => d.id === selectedId) ?? allDrinks[0];
   const ml = parseInt(amount, 10) || 0;
 
-  const dateStr = now.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-  const timeStr = now.toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const dateValue = `${when.getFullYear()}-${pad(when.getMonth() + 1)}-${pad(when.getDate())}`;
+  const timeValue = `${pad(when.getHours())}:${pad(when.getMinutes())}`;
+
+  const setDatePart = (val: string) => {
+    const [y, m, d] = val.split("-").map(Number);
+    if (!y || !m || !d) return;
+    const next = new Date(when);
+    next.setFullYear(y, m - 1, d);
+    setWhen(next);
+    setWhenEdited(true);
+  };
+  const setTimePart = (val: string) => {
+    const [h, mi] = val.split(":").map(Number);
+    if (Number.isNaN(h) || Number.isNaN(mi)) return;
+    const next = new Date(when);
+    next.setHours(h, mi, 0, 0);
+    setWhen(next);
+    setWhenEdited(true);
+  };
 
   if (!mounted) return null;
 
@@ -174,16 +186,29 @@ export function OtherDrinksSheet({
               </div>
             </div>
 
-            {/* Date / time */}
+            {/* Date / time — 可點選調整 */}
             <div className="flex justify-center gap-3 px-5 py-3">
-              <div className="flex items-center gap-2 rounded-xl bg-surface px-4 py-2 text-sm font-medium text-ink-2">
+              <label className="flex items-center gap-2 rounded-xl bg-surface px-4 py-2 text-sm font-medium text-ink-2">
                 <span className="text-ink-3"><CalendarIcon /></span>
-                {dateStr}
-              </div>
-              <div className="font-num flex items-center gap-2 rounded-xl bg-surface px-4 py-2 text-sm font-medium text-ink-2">
+                <input
+                  type="date"
+                  value={dateValue}
+                  max={`${new Date().getFullYear() + 1}-12-31`}
+                  onChange={(e) => setDatePart(e.target.value)}
+                  aria-label="Date"
+                  className="bg-transparent text-sm font-medium text-ink-2 outline-none"
+                />
+              </label>
+              <label className="font-num flex items-center gap-2 rounded-xl bg-surface px-4 py-2 text-sm font-medium text-ink-2">
                 <span className="text-ink-3"><ClockIcon /></span>
-                {timeStr}
-              </div>
+                <input
+                  type="time"
+                  value={timeValue}
+                  onChange={(e) => setTimePart(e.target.value)}
+                  aria-label="Time"
+                  className="bg-transparent text-sm font-medium text-ink-2 outline-none"
+                />
+              </label>
             </div>
 
             {/* Keypad */}
@@ -211,7 +236,8 @@ export function OtherDrinksSheet({
                 disabled={ml <= 0}
                 onClick={() => {
                   if (selected && ml > 0) {
-                    onAdd(selected, ml);
+                    /* 未手動調整時用當下時間，避免與開啟時間有落差 */
+                    onAdd(selected, ml, whenEdited ? when.getTime() : Date.now());
                     onClose();
                   }
                 }}
