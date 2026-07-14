@@ -39,7 +39,7 @@ export function DrinkGrid({
           }}
         >
           <div className="flex items-start justify-between">
-            <span className="text-sm font-semibold text-ink-2">{c.name}</span>
+            <span className="text-sm font-bold text-ink">{c.name}</span>
             <DrinkIcon icon={c.type.icon} className="h-6 w-6" style={{ color: c.type.color }} />
           </div>
           <span className="font-num text-xl font-bold" style={{ color: c.type.color }}>
@@ -55,7 +55,7 @@ export function DrinkGrid({
         style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}
       >
         <div className="flex items-start justify-between">
-          <span className="text-sm font-semibold text-ink-2">Other Drinks</span>
+          <span className="text-sm font-bold text-ink">Other Drinks</span>
           <svg width="26" height="26" viewBox="0 0 28 28" fill="none" aria-hidden>
             <circle cx="9" cy="14" r="2" fill="rgb(var(--c-ink-3))" />
             <circle cx="14" cy="14" r="2" fill="rgb(var(--c-ink-3))" />
