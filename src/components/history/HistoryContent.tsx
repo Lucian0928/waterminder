@@ -462,23 +462,25 @@ export function HistoryContent() {
   const goal = settings.goal.dailyTargetMl;
   const tabs: StatTab[] = ["D", "W", "M", "Y"];
 
-  /* 篩選選項：使用者杯型 + 記錄裡出現過但已不在清單的類型 */
+  /* 篩選選項：只列出「實際出現在記錄中」的飲品類型。
+     依設定順序排列；已從清單刪除但記錄仍有的類型，用記錄裡的名稱/圖示/顏色。 */
   const filterOptions = useMemo(() => {
-    const opts = drinkTypes.map((t) => ({
-      id: t.id,
-      name: t.name,
-      icon: t.icon,
-      color: t.color,
-    }));
-    const known = new Set(opts.map((o) => o.id));
-    for (const l of logs) {
-      if (!known.has(l.drinkTypeId)) {
-        known.add(l.drinkTypeId);
+    const seen = new Set(logs.map((l) => l.drinkTypeId));
+    const opts: { id: string; name: string; icon: string; color: string }[] = [];
+    for (const t of drinkTypes) {
+      if (seen.has(t.id)) {
+        opts.push({ id: t.id, name: t.name, icon: t.icon, color: t.color });
+        seen.delete(t.id);
+      }
+    }
+    for (const id of seen) {
+      const sample = logs.find((l) => l.drinkTypeId === id);
+      if (sample) {
         opts.push({
-          id: l.drinkTypeId,
-          name: l.drinkName,
-          icon: l.drinkIcon,
-          color: l.drinkColor || FALLBACK_COLOR,
+          id,
+          name: sample.drinkName,
+          icon: sample.drinkIcon,
+          color: sample.drinkColor || FALLBACK_COLOR,
         });
       }
     }
@@ -486,9 +488,14 @@ export function HistoryContent() {
   }, [drinkTypes, logs]);
 
   const activeFilter = filterOptions.find((o) => o.id === filterId) ?? null;
+  /* 若所選類型已不在任何記錄中，視同「全部」，避免標題與清單不同步 */
+  const effectiveFilterId = activeFilter ? filterId : null;
   const filteredLogs = useMemo(
-    () => (filterId ? logs.filter((l) => l.drinkTypeId === filterId) : logs),
-    [logs, filterId]
+    () =>
+      effectiveFilterId
+        ? logs.filter((l) => l.drinkTypeId === effectiveFilterId)
+        : logs,
+    [logs, effectiveFilterId]
   );
 
   const period = useMemo(() => {
