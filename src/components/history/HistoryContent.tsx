@@ -16,6 +16,8 @@ import {
 import { PageTransition } from "@/components/layout/PageTransition";
 import { OtherDrinksSheet } from "@/components/home/OtherDrinksSheet";
 import { DrinkIcon } from "@/components/ui/DrinkIcon";
+import { LogEditSheet } from "./LogEditSheet";
+import { AllLogsSheet } from "./AllLogsSheet";
 import { useWaterStore } from "@/store/useWaterStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useHydrated } from "@/hooks/useHydrated";
@@ -301,7 +303,31 @@ function MiniRing({ pct }: { pct: number }) {
   );
 }
 
-function TodayLogs({ logs, goal }: { logs: DrinkLog[]; goal: number }) {
+function MoreIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden>
+      <circle cx="5" cy="12" r="1.8" fill="currentColor" />
+      <circle cx="12" cy="12" r="1.8" fill="currentColor" />
+      <circle cx="19" cy="12" r="1.8" fill="currentColor" />
+    </svg>
+  );
+}
+
+function DayLogs({
+  logs,
+  goal,
+  title,
+  onEdit,
+  onViewAll,
+}: {
+  logs: DrinkLog[];
+  goal: number;
+  title: string;
+  onEdit: (log: DrinkLog) => void;
+  onViewAll: () => void;
+}) {
+  const [menuId, setMenuId] = useState<string | null>(null);
+
   const rows = useMemo(() => {
     const asc = [...logs].sort((a, b) => a.timestamp - b.timestamp);
     let running = 0;
@@ -313,49 +339,90 @@ function TodayLogs({ logs, goal }: { logs: DrinkLog[]; goal: number }) {
       .reverse();
   }, [logs, goal]);
 
-  if (rows.length === 0) return null;
-
   return (
     <div>
       <div className="mb-3 flex items-center justify-between">
-        <span className="text-lg font-bold text-ink">{"Today's Logs"}</span>
+        <span className="text-lg font-bold text-ink">{title}</span>
+        <button
+          onClick={onViewAll}
+          className="text-sm font-semibold text-accent"
+        >
+          View all
+        </button>
       </div>
-      <div className="flex flex-col gap-2">
-        {rows.map(({ log, pct }) => (
-          <div
-            key={log.id}
-            className="flex items-center gap-3 rounded-2xl bg-surface px-4 py-3"
-          >
+
+      {rows.length === 0 ? (
+        <p className="rounded-2xl bg-surface px-4 py-6 text-center text-sm text-ink-3">
+          No logs on this day.
+        </p>
+      ) : (
+        <div className="flex flex-col gap-2">
+          {rows.map(({ log, pct }) => (
             <div
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
-              style={{ background: `${log.drinkColor}2b` }}
+              key={log.id}
+              className="flex items-center gap-3 rounded-2xl bg-surface px-4 py-3"
             >
-              <DrinkIcon
-                icon={log.drinkIcon}
-                className="h-5 w-5"
-                style={{ color: log.drinkColor }}
-              />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="text-sm font-semibold text-ink">
-                {log.drinkName} — {log.volumeMl}ml
+              <div
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+                style={{ background: `${log.drinkColor}2b` }}
+              >
+                <DrinkIcon icon={log.drinkIcon} className="h-5 w-5" style={{ color: log.drinkColor }} />
               </div>
-              <div className="font-num text-xs text-ink-3">
-                {formatTime(log.timestamp)}
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-semibold text-ink">
+                  {log.drinkName} — {log.volumeMl}ml
+                </div>
+                <div className="font-num text-xs text-ink-3">{formatTime(log.timestamp)}</div>
               </div>
-            </div>
-            <div className="flex flex-col items-center gap-0.5">
-              <span className="text-xs text-ink-3">daily goal</span>
               <div className="relative flex items-center justify-center">
                 <MiniRing pct={pct} />
                 <span className="font-num absolute text-[9px] font-bold text-accent">
                   {Math.round(pct * 100)}%
                 </span>
               </div>
+
+              {/* "..." 選單：Edit / View all logs */}
+              <div className="relative">
+                <button
+                  onClick={() => setMenuId((v) => (v === log.id ? null : log.id))}
+                  aria-label="Log options"
+                  className="flex h-8 w-8 items-center justify-center rounded-full text-ink-3 transition-colors hover:text-ink"
+                >
+                  <MoreIcon />
+                </button>
+                {menuId === log.id && (
+                  <>
+                    <div className="fixed inset-0 z-30" onClick={() => setMenuId(null)} />
+                    <div
+                      className="absolute right-0 top-full z-40 mt-1 w-40 overflow-hidden rounded-2xl bg-surface p-1.5"
+                      style={{ boxShadow: "0 8px 30px rgba(0,0,0,0.14)" }}
+                    >
+                      <button
+                        onClick={() => {
+                          setMenuId(null);
+                          onEdit(log);
+                        }}
+                        className="w-full rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-ink hover:bg-bg"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => {
+                          setMenuId(null);
+                          onViewAll();
+                        }}
+                        className="w-full rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-ink hover:bg-bg"
+                      >
+                        View all logs
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -367,6 +434,8 @@ export function HistoryContent() {
   const today = useToday();
   const logs = useWaterStore((s) => s.logs);
   const addLog = useWaterStore((s) => s.addLog);
+  const updateLog = useWaterStore((s) => s.updateLog);
+  const removeLog = useWaterStore((s) => s.removeLog);
   const settings = useSettingsStore((s) => s.settings);
   const drinkTypes = useSettingsStore((s) => s.drinkTypes);
 
@@ -375,6 +444,8 @@ export function HistoryContent() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [filterId, setFilterId] = useState<string | null>(null);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [editLog, setEditLog] = useState<DrinkLog | null>(null);
+  const [allLogsOpen, setAllLogsOpen] = useState(false);
 
   const goal = settings.goal.dailyTargetMl;
   const tabs: StatTab[] = ["D", "W", "M", "Y"];
@@ -474,9 +545,10 @@ export function HistoryContent() {
     return { label: "Average", value: days > 0 ? Math.round(total / days) : 0 };
   }, [tab, anchor, filteredLogs, period]);
 
-  const todayLogs = useMemo(
-    () => filteredLogs.filter((l) => l.dateKey === today),
-    [filteredLogs, today]
+  /* 目前檢視日的紀錄（D 分頁，任何一天皆可） */
+  const dayLogs = useMemo(
+    () => filteredLogs.filter((l) => l.dateKey === anchor),
+    [filteredLogs, anchor]
   );
 
   if (!hydrated) {
@@ -664,9 +736,15 @@ export function HistoryContent() {
         )}
       </div>
 
-      {/* Today's Logs — 只在 D + 今天 */}
-      {tab === "D" && anchor === today && (
-        <TodayLogs logs={todayLogs} goal={goal} />
+      {/* 該日紀錄清單 — D 分頁任何一天 */}
+      {tab === "D" && (
+        <DayLogs
+          logs={dayLogs}
+          goal={goal}
+          title={`${periodLabel("D", anchor, today)} Logs`}
+          onEdit={(log) => setEditLog(log)}
+          onViewAll={() => setAllLogsOpen(true)}
+        />
       )}
 
       <OtherDrinksSheet
@@ -674,6 +752,22 @@ export function HistoryContent() {
         onClose={() => setSheetOpen(false)}
         drinkTypes={drinkTypes}
         onAdd={(d, ml, ts) => addLog(d, ml, ts)}
+      />
+
+      <AllLogsSheet
+        open={allLogsOpen}
+        onClose={() => setAllLogsOpen(false)}
+        logs={filteredLogs}
+        today={today}
+        onEdit={(log) => setEditLog(log)}
+      />
+
+      <LogEditSheet
+        log={editLog}
+        drinkTypes={drinkTypes}
+        onClose={() => setEditLog(null)}
+        onSave={(log) => updateLog(log)}
+        onDelete={(id) => removeLog(id)}
       />
     </PageTransition>
   );

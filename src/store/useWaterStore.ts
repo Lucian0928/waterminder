@@ -13,6 +13,7 @@ interface WaterState {
   hydrate: () => Promise<void>;
   addLog: (drink: DrinkType, volumeMl: number, timestamp?: number) => DrinkLog;
   removeLog: (id: string) => void;
+  updateLog: (log: DrinkLog) => void;
   importLogs: (logs: DrinkLog[]) => void;
   clearLogs: () => void;
 }
@@ -48,6 +49,12 @@ export const useWaterStore = create<WaterState>((set, get) => ({
   removeLog: (id) => {
     set({ logs: get().logs.filter((l) => l.id !== id) });
     void getDataProvider().deleteLog(id);
+  },
+
+  updateLog: (log) => {
+    const logs = get().logs.map((l) => (l.id === log.id ? log : l));
+    set({ logs });
+    void getDataProvider().replaceLogs(logs);
   },
 
   importLogs: (logs) => {
