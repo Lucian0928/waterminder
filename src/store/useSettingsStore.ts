@@ -4,7 +4,6 @@ import { create } from "zustand";
 import type {
   Cup,
   DrinkType,
-  HealthSyncSettings,
   ReminderSettings,
   Settings,
   ThemeMode,
@@ -47,7 +46,6 @@ interface SettingsState {
   setVolumeUnit: (unit: VolumeUnit) => void;
   setTheme: (theme: ThemeMode) => void;
   setReminder: (reminder: ReminderSettings) => void;
-  setHealthSync: (healthSync: HealthSyncSettings) => void;
   setCups: (cups: Cup[]) => void;
   addCup: (cup: Cup) => void;
   updateCup: (cup: Cup) => void;
@@ -84,12 +82,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
         : { types: DEFAULT_DRINK_TYPES, changed: false };
 
     let settings: Settings = saved
-      ? {
-          ...DEFAULT_SETTINGS,
-          ...saved,
-          reminder: { ...DEFAULT_SETTINGS.reminder, ...saved.reminder },
-          healthSync: { ...DEFAULT_SETTINGS.healthSync, ...saved.healthSync },
-        }
+      ? { ...DEFAULT_SETTINGS, ...saved, reminder: { ...DEFAULT_SETTINGS.reminder, ...saved.reminder } }
       : DEFAULT_SETTINGS;
 
     /* 遷移 My Cup：舊資料是 cupIds（string[]）或缺少 cups → 轉成 Cup[] */
@@ -137,12 +130,6 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
 
   setReminder: (reminder) => {
     const settings = { ...get().settings, reminder };
-    set({ settings });
-    persistSettings(settings);
-  },
-
-  setHealthSync: (healthSync) => {
-    const settings = { ...get().settings, healthSync };
     set({ settings });
     persistSettings(settings);
   },
@@ -201,7 +188,6 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       ...DEFAULT_SETTINGS,
       ...rawSettings,
       reminder: { ...DEFAULT_SETTINGS.reminder, ...rawSettings.reminder },
-      healthSync: { ...DEFAULT_SETTINGS.healthSync, ...rawSettings.healthSync },
       cups,
     };
     delete (settings as unknown as { cupIds?: string[] }).cupIds;

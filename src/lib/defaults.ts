@@ -111,12 +111,4 @@ export const DEFAULT_SETTINGS: Settings = {
   },
   quickVolumesMl: [250, 350, 500],
   cups: DEFAULT_CUPS,
-  healthSync: {
-    enabled: false,
-    shortcutName: "Log Water to Health",
-    reminderTime: "21:00",
-    syncedDate: "",
-    syncedMl: 0,
-    reminderDate: "",
-  },
 };

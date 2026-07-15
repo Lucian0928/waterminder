@@ -6,7 +6,6 @@ import { GoalSetting } from "./GoalSetting";
 import { UnitSetting } from "./UnitSetting";
 import { DrinksManager } from "./DrinksManager";
 import { ReminderSetting } from "./ReminderSetting";
-import { HealthSync } from "./HealthSync";
 import { ThemeToggle } from "./ThemeToggle";
 import { DataSection } from "./DataSection";
 import { useHydrated } from "@/hooks/useHydrated";
@@ -57,10 +56,6 @@ export function SettingsContent() {
 
       <Section title="Reminders">
         <ReminderSetting />
-      </Section>
-
-      <Section title="Apple Health">
-        <HealthSync />
       </Section>
 
       <Section title="Appearance">

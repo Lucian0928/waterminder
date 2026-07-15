@@ -61,21 +61,6 @@ export interface ReminderSettings {
   intervalMinutes: ReminderInterval;
 }
 
-/** Apple Health 同步：透過捷徑（Shortcut）把當日飲水量寫入健康 App */
-export interface HealthSyncSettings {
-  enabled: boolean;
-  /** 使用者在「捷徑」App 建立的捷徑名稱 */
-  shortcutName: string;
-  /** 每日提醒同步時間 "HH:mm"；空字串代表不提醒 */
-  reminderTime: string;
-  /** 今天已同步到 Health 的日期（"YYYY-MM-DD"） */
-  syncedDate: string;
-  /** 今天已同步出去的量（ml），用來只補送新增的部分 */
-  syncedMl: number;
-  /** 今天是否已發出同步提醒，避免重複打擾 */
-  reminderDate: string;
-}
-
 export interface Settings {
   goal: UserGoal;
   volumeUnit: VolumeUnit;
@@ -85,8 +70,6 @@ export interface Settings {
   quickVolumesMl: number[];
   /** My Cup：Home 上的捷徑杯子，依顯示順序 */
   cups: Cup[];
-  /** Apple Health 同步設定 */
-  healthSync: HealthSyncSettings;
 }
 
 /** 單日彙總，供統計與圖表使用 */
