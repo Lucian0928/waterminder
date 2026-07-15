@@ -6,6 +6,7 @@ import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { Button } from "@/components/ui/Button";
 import {
   ensurePermission,
+  nextReminderAt,
   notificationsSupported,
   showNotification,
 } from "@/lib/notifications";
@@ -26,12 +27,28 @@ export function ReminderSetting() {
   const invalidRange =
     minutesOf(reminder.sleepTime) <= minutesOf(reminder.wakeTime);
 
+  const nextAt =
+    reminder.enabled && !invalidRange ? nextReminderAt(reminder) : null;
+  const nextAtStr =
+    nextAt != null
+      ? new Date(nextAt).toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        })
+      : null;
+
   const handleToggle = async () => {
     if (!reminder.enabled) {
       const p = await ensurePermission();
       setPermission(p);
       if (p !== "granted") return;
       setReminder({ ...reminder, enabled: true });
+      // 立即回饋一則通知，讓使用者確認通知確實會出現
+      void showNotification(
+        "Reminders on 💧",
+        `I'll nudge you every ${reminder.intervalMinutes} min while you're awake.`
+      );
     } else {
       setReminder({ ...reminder, enabled: false });
     }
@@ -110,6 +127,11 @@ export function ReminderSetting() {
               onChange={(v) => setReminder({ ...reminder, intervalMinutes: v })}
             />
           </div>
+          {nextAtStr && (
+            <p className="font-num text-xs font-semibold text-accent">
+              Next reminder at {nextAtStr}
+            </p>
+          )}
           <Button
             variant="ghost"
             onClick={() =>

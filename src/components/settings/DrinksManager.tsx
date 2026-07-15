@@ -6,6 +6,7 @@ import { GlowCard } from "@/components/ui/GlowCard";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { DrinkIcon, DRINK_ICON_KEYS } from "@/components/ui/DrinkIcon";
+import { useVolumeUnit } from "@/hooks/useVolumeUnit";
 import { mergeWithCatalog, newId } from "@/lib/defaults";
 import type { Cup, DrinkType } from "@/types";
 
@@ -27,6 +28,7 @@ function IconCircle({
   volumeMl?: number;
   size?: number;
 }) {
+  const { fmt } = useVolumeUnit();
   return (
     <span
       className="relative flex shrink-0 items-center justify-center rounded-full"
@@ -38,7 +40,7 @@ function IconCircle({
           className="font-num absolute -bottom-1 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full px-1.5 py-[1px] text-[9px] font-bold text-white"
           style={{ background: type.color, boxShadow: "0 0 0 2px rgb(var(--c-surface))" }}
         >
-          {volumeMl}ml
+          {fmt(volumeMl)}
         </span>
       )}
     </span>
@@ -116,6 +118,7 @@ export function DrinksManager() {
   const updateCup = useSettingsStore((s) => s.updateCup);
   const deleteCup = useSettingsStore((s) => s.deleteCup);
 
+  const { label, raw, toMl, fmt, step } = useVolumeUnit();
   const [sheet, setSheet] = useState<Sheet>(null);
   const [cupDraft, setCupDraft] = useState<CupDraft | null>(null);
   const [typeDraft, setTypeDraft] = useState<TypeDraft | null>(null);
@@ -133,7 +136,7 @@ export function DrinksManager() {
     const type = typeById.get(cupDraft.drinkTypeId);
     if (!type) return;
     if (!inLibrary.has(type.id)) addDrinkType({ ...type });
-    const volumeMl = Math.max(10, Math.round(Number(cupDraft.volume) || 0));
+    const volumeMl = Math.max(10, toMl(Number(cupDraft.volume) || 0));
     const cup: Cup = {
       id: cupDraft.id ?? newId(),
       drinkTypeId: type.id,
@@ -213,7 +216,7 @@ export function DrinksManager() {
                       id: cup.id,
                       drinkTypeId: cup.drinkTypeId,
                       name: cup.name,
-                      volume: String(cup.volumeMl),
+                      volume: String(raw(cup.volumeMl)),
                     })
                   }
                   className="flex min-w-0 flex-1 items-center gap-3 text-left"
@@ -222,7 +225,7 @@ export function DrinksManager() {
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-semibold text-ink">{cup.name}</span>
                     <span className="font-num block text-xs text-ink-3">
-                      {cup.volumeMl} ml · {type.name}
+                      {fmt(cup.volumeMl)} · {type.name}
                     </span>
                   </span>
                   <Chevron />
@@ -246,7 +249,7 @@ export function DrinksManager() {
               id: null,
               drinkTypeId: allTypes[0]?.id ?? "water",
               name: "",
-              volume: String(allTypes[0]?.defaultVolumeMl ?? 250),
+              volume: String(raw(allTypes[0]?.defaultVolumeMl ?? 250)),
             })
           }
         >
@@ -316,7 +319,7 @@ export function DrinksManager() {
             <div className="flex flex-col items-center gap-2 pt-1">
               <IconCircle type={cupPreviewType} size={72} />
               <span className="font-num pt-1 text-lg font-bold text-ink">
-                {Math.max(0, Math.round(Number(cupDraft.volume) || 0))}ml
+                {cupDraft.volume || 0} {label}
               </span>
             </div>
 
@@ -370,12 +373,12 @@ export function DrinksManager() {
             </div>
 
             <label className="flex flex-col gap-1.5">
-              <span className="text-xs font-semibold text-ink-3">Amount (ml)</span>
+              <span className="text-xs font-semibold text-ink-3">Amount ({label})</span>
               <input
                 type="number"
-                inputMode="numeric"
-                min={10}
-                step={10}
+                inputMode="decimal"
+                min={0}
+                step={step}
                 value={cupDraft.volume}
                 onChange={(e) => setCupDraft({ ...cupDraft, volume: e.target.value })}
                 className="font-num rounded-xl border border-line bg-surface-2 px-3 py-2.5 text-sm font-bold text-ink"

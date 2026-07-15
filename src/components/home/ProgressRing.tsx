@@ -1,12 +1,12 @@
 "use client";
 
+import { useVolumeUnit } from "@/hooks/useVolumeUnit";
+
 const SIZE = 260;
 const C = 130;
 const R = 108;
 const RING_W = 18;
 const CIRCUM = 2 * Math.PI * R;
-
-const nf = new Intl.NumberFormat("en-US");
 
 export function ProgressRing({
   currentMl,
@@ -15,6 +15,7 @@ export function ProgressRing({
   currentMl: number;
   goalMl: number;
 }) {
+  const { val, label } = useVolumeUnit();
   const pct = goalMl > 0 ? currentMl / goalMl : 0;
   const clamped = Math.min(1, Math.max(0, pct));
 
@@ -58,7 +59,8 @@ export function ProgressRing({
           {Math.round(pct * 100)}%
         </span>
         <span className="font-num text-4xl font-extrabold tracking-tight text-ink">
-          {nf.format(Math.round(currentMl))}ml
+          {val(currentMl)}
+          <span className="ml-1 text-2xl">{label}</span>
         </span>
       </div>
     </div>

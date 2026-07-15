@@ -3,10 +3,9 @@
 import { useMemo } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { DrinkIcon } from "@/components/ui/DrinkIcon";
+import { useVolumeUnit } from "@/hooks/useVolumeUnit";
 import { dateFromKey, formatTime } from "@/lib/dates";
 import type { DrinkLog } from "@/types";
-
-const nf = new Intl.NumberFormat("en-US");
 
 function dayLabel(key: string, today: string): string {
   if (key === today) return "Today";
@@ -32,6 +31,7 @@ export function AllLogsSheet({
   today: string;
   onEdit: (log: DrinkLog) => void;
 }) {
+  const { fmt } = useVolumeUnit();
   const groups = useMemo(() => {
     const byDay = new Map<string, DrinkLog[]>();
     for (const l of logs) {
@@ -59,7 +59,7 @@ export function AllLogsSheet({
               <div className="mb-1.5 flex items-baseline justify-between">
                 <span className="text-sm font-bold text-ink">{dayLabel(g.key, today)}</span>
                 <span className="font-num text-xs font-semibold text-ink-3">
-                  {nf.format(g.total)} ml
+                  {fmt(g.total)}
                 </span>
               </div>
               <div className="flex flex-col gap-1.5">
@@ -77,7 +77,7 @@ export function AllLogsSheet({
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-semibold text-ink">
-                        {log.drinkName} — {log.volumeMl}ml
+                        {log.drinkName} — {fmt(log.volumeMl)}
                       </span>
                       <span className="font-num block text-xs text-ink-3">
                         {formatTime(log.timestamp)}

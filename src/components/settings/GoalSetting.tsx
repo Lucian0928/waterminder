@@ -6,11 +6,13 @@ import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { Button } from "@/components/ui/Button";
 import { suggestedIntakeMl } from "@/lib/goal";
 import { formatVolume } from "@/lib/units";
+import { useVolumeUnit } from "@/hooks/useVolumeUnit";
 import type { WeightUnit } from "@/types";
 
 export function GoalSetting() {
   const settings = useSettingsStore((s) => s.settings);
   const setGoal = useSettingsStore((s) => s.setGoal);
+  const { label, raw, toMl, step } = useVolumeUnit();
 
   const [weightUnit, setWeightUnit] = useState<WeightUnit>(
     settings.goal.weightUnit ?? "kg"
@@ -28,18 +30,17 @@ export function GoalSetting() {
   return (
     <div className="flex flex-col gap-4">
       <label className="flex items-center justify-between gap-4">
-        <span className="text-sm font-semibold text-ink-2">Daily goal (ml)</span>
+        <span className="text-sm font-semibold text-ink-2">Daily goal ({label})</span>
         <input
           type="number"
-          inputMode="numeric"
-          min={200}
-          max={8000}
-          step={50}
-          value={settings.goal.dailyTargetMl}
+          inputMode="decimal"
+          min={0}
+          step={step}
+          value={raw(settings.goal.dailyTargetMl)}
           onChange={(e) => {
             const v = Number(e.target.value);
             if (Number.isFinite(v) && v > 0) {
-              setGoal({ ...settings.goal, dailyTargetMl: Math.round(v) });
+              setGoal({ ...settings.goal, dailyTargetMl: toMl(v) });
             }
           }}
           className="font-num w-28 rounded-xl border border-line bg-surface-2 px-3 py-2 text-right text-base font-bold text-ink"

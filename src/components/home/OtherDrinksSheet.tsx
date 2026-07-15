@@ -5,11 +5,8 @@ import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { DrinkIcon } from "@/components/ui/DrinkIcon";
 import { mergeWithCatalog } from "@/lib/defaults";
+import { useVolumeUnit } from "@/hooks/useVolumeUnit";
 import type { DrinkType } from "@/types";
-
-const KEYPAD_KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "00", "0", "⌫"];
-
-const nf = new Intl.NumberFormat("en-US");
 
 function XIcon() {
   return (
@@ -62,6 +59,13 @@ export function OtherDrinksSheet({
   drinkTypes: DrinkType[];
   onAdd: (drink: DrinkType, volumeMl: number, timestamp: number) => void;
 }) {
+  const { label, toMl } = useVolumeUnit();
+  const allowsDecimal = label === "L"; // L 需要小數輸入
+  const KEYPAD_KEYS = [
+    "1", "2", "3", "4", "5", "6", "7", "8", "9",
+    allowsDecimal ? "." : "00", "0", "⌫",
+  ];
+
   const allDrinks = useMemo(
     () => mergeWithCatalog(drinkTypes).filter((d) => d.active),
     [drinkTypes]
@@ -88,14 +92,18 @@ export function OtherDrinksSheet({
         const next = prev.slice(0, -1);
         return next === "" ? "0" : next;
       }
+      if (k === ".") {
+        return prev.includes(".") ? prev : prev + ".";
+      }
       if (prev === "0") return k === "00" ? "0" : k;
       const next = prev + k;
-      return next.length > 5 ? prev : next;
+      return next.replace(".", "").length > 5 ? prev : next;
     });
   }, []);
 
   const selected = allDrinks.find((d) => d.id === selectedId) ?? allDrinks[0];
-  const ml = parseInt(amount, 10) || 0;
+  const value = parseFloat(amount) || 0;
+  const ml = toMl(value);
 
   const pad = (n: number) => String(n).padStart(2, "0");
   const dateValue = `${when.getFullYear()}-${pad(when.getMonth() + 1)}-${pad(when.getDate())}`;
@@ -148,7 +156,8 @@ export function OtherDrinksSheet({
             {/* Amount */}
             <div className="flex flex-col items-center py-3">
               <span className="font-num text-5xl font-extrabold tracking-tight text-ink">
-                {nf.format(ml)}ml
+                {amount}
+                <span className="ml-2 text-2xl font-bold text-ink-2">{label}</span>
               </span>
               <span className="mt-1 text-sm font-medium text-ink-2">
                 {selected?.name ?? ""}

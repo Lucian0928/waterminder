@@ -18,6 +18,9 @@ import { OtherDrinksSheet } from "@/components/home/OtherDrinksSheet";
 import { DrinkIcon } from "@/components/ui/DrinkIcon";
 import { LogEditSheet } from "./LogEditSheet";
 import { AllLogsSheet } from "./AllLogsSheet";
+import { useVolumeUnit } from "@/hooks/useVolumeUnit";
+import { toUnitValue, unitLabel } from "@/lib/units";
+import type { VolumeUnit } from "@/types";
 import { useWaterStore } from "@/store/useWaterStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useHydrated } from "@/hooks/useHydrated";
@@ -27,7 +30,6 @@ import type { DrinkLog, DrinkType } from "@/types";
 
 type StatTab = "D" | "W" | "M" | "Y";
 
-const nf = new Intl.NumberFormat("en-US");
 const FALLBACK_COLOR = "#94A3B8";
 
 /* ── 小圖示 ─────────────────────────────────────────── */
@@ -147,14 +149,20 @@ function kFmt(v: number): string {
   return v >= 1000 ? `${(v / 1000).toFixed(1).replace(/\.0$/, "")}K` : String(v);
 }
 
+function yTick(v: number, unit: VolumeUnit): string {
+  return unit === "ml" ? kFmt(v) : toUnitValue(v, unit);
+}
+
 function DayChart({
   logs,
   dayKey,
   goal,
+  unit,
 }: {
   logs: DrinkLog[];
   dayKey: string;
   goal: number;
+  unit: VolumeUnit;
 }) {
   const data = useMemo(() => {
     const dayLogs = logs
@@ -195,7 +203,7 @@ function DayChart({
         />
         <YAxis
           ticks={[Math.round(goal / 2), goal]}
-          tickFormatter={(v: number) => nf.format(v)}
+          tickFormatter={(v: number) => yTick(v, unit)}
           tick={TICK_STYLE}
           axisLine={false}
           tickLine={false}
@@ -203,7 +211,7 @@ function DayChart({
         />
         <ReferenceLine y={goal} stroke="#3B82F6" strokeWidth={1.5} />
         <Tooltip
-          formatter={(v: number) => [`${nf.format(v)}ml`, "Total"]}
+          formatter={(v: number) => [`${toUnitValue(v, unit)} ${unitLabel(unit)}`, "Total"]}
           contentStyle={{ borderRadius: 10, border: "none", fontSize: 12 }}
         />
         <Area
@@ -225,12 +233,14 @@ function StackedChart({
   goal,
   ticks,
   thinBars,
+  unit,
 }: {
   data: Record<string, string | number>[];
   types: TypeInfo[];
   goal: number;
   ticks?: string[];
   thinBars?: boolean;
+  unit: VolumeUnit;
 }) {
   const maxTotal = Math.max(
     goal * 1.15,
@@ -255,7 +265,7 @@ function StackedChart({
         />
         <YAxis
           ticks={[Math.round(goal / 2), goal]}
-          tickFormatter={kFmt}
+          tickFormatter={(v: number) => yTick(v, unit)}
           tick={TICK_STYLE}
           axisLine={false}
           tickLine={false}
@@ -263,7 +273,7 @@ function StackedChart({
         />
         <ReferenceLine y={goal} stroke="#3B82F6" strokeWidth={1.5} />
         <Tooltip
-          formatter={(v: number, name: string) => [`${nf.format(v)}ml`, name]}
+          formatter={(v: number, name: string) => [`${toUnitValue(v, unit)} ${unitLabel(unit)}`, name]}
           contentStyle={{ borderRadius: 10, border: "none", fontSize: 12 }}
         />
         {types.map((t, i) => (
@@ -326,6 +336,7 @@ function DayLogs({
   onEdit: (log: DrinkLog) => void;
   onViewAll: () => void;
 }) {
+  const { fmt } = useVolumeUnit();
   const [menuId, setMenuId] = useState<string | null>(null);
 
   const rows = useMemo(() => {
@@ -370,7 +381,7 @@ function DayLogs({
               </div>
               <div className="min-w-0 flex-1">
                 <div className="text-sm font-semibold text-ink">
-                  {log.drinkName} — {log.volumeMl}ml
+                  {log.drinkName} — {fmt(log.volumeMl)}
                 </div>
                 <div className="font-num text-xs text-ink-3">{formatTime(log.timestamp)}</div>
               </div>
@@ -447,6 +458,7 @@ export function HistoryContent() {
   const [editLog, setEditLog] = useState<DrinkLog | null>(null);
   const [allLogsOpen, setAllLogsOpen] = useState(false);
 
+  const { unit, val, label } = useVolumeUnit();
   const goal = settings.goal.dailyTargetMl;
   const tabs: StatTab[] = ["D", "W", "M", "Y"];
 
@@ -719,12 +731,12 @@ export function HistoryContent() {
         <div className="mb-3">
           <div className="text-sm font-semibold text-ink-2">{metric.label}</div>
           <div className="font-num text-3xl font-extrabold tracking-tight text-accent">
-            {nf.format(metric.value)} ml
+            {val(metric.value)} {label}
           </div>
         </div>
 
         {tab === "D" ? (
-          <DayChart logs={filteredLogs} dayKey={anchor} goal={goal} />
+          <DayChart logs={filteredLogs} dayKey={anchor} goal={goal} unit={unit} />
         ) : (
           <StackedChart
             data={barData}
@@ -732,6 +744,7 @@ export function HistoryContent() {
             goal={goal}
             ticks={tab === "M" ? ["1", "8", "15", "22", "29"] : undefined}
             thinBars={tab === "M"}
+            unit={unit}
           />
         )}
       </div>

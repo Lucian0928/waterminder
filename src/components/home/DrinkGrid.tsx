@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { DrinkIcon } from "@/components/ui/DrinkIcon";
+import { useVolumeUnit } from "@/hooks/useVolumeUnit";
 import type { DrinkType } from "@/types";
 
 /** hex 色 + 透明度 → 卡片粉彩底 */
@@ -25,6 +26,7 @@ export function DrinkGrid({
   onAdd: (type: DrinkType, volumeMl: number) => void;
   onOther: () => void;
 }) {
+  const { fmt } = useVolumeUnit();
   return (
     <div className="grid grid-cols-2 gap-3">
       {cups.map((c) => (
@@ -43,7 +45,7 @@ export function DrinkGrid({
             <DrinkIcon icon={c.type.icon} className="h-6 w-6" style={{ color: c.type.color }} />
           </div>
           <span className="font-num text-xl font-bold" style={{ color: c.type.color }}>
-            {c.volumeMl}ml
+            {fmt(c.volumeMl)}
           </span>
         </motion.button>
       ))}
